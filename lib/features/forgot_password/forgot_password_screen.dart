@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:moneyvesto/core/global_components/base_widget_container.dart';
 import 'package:moneyvesto/core/global_components/global_button.dart';
 import 'package:moneyvesto/core/global_components/global_text.dart';
+import 'package:moneyvesto/core/global_components/global_text_fields.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
   const ForgotPasswordScreen({super.key});
@@ -32,19 +33,10 @@ class ForgotPasswordScreen extends StatelessWidget {
                 color: Colors.white,
               ),
               SizedBox(height: 40.h),
-              TextField(
+              GlobalTextField(
                 controller: emailController,
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-                  filled: true,
-                  fillColor: Colors.white.withOpacity(0.1),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.r),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
+                hintText: 'Email',
+                keyboardType: TextInputType.emailAddress,
               ),
               SizedBox(height: 30.h),
               GlobalButton(

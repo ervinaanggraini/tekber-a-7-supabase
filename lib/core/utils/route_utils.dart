@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:moneyvesto/features/forgot_password/forgot_password_screen.dart';
+import 'package:moneyvesto/features/home/home_screen.dart';
 import 'package:moneyvesto/features/login/login_screen.dart';
 import 'package:moneyvesto/features/onboarding/onboarding_screen.dart';
 import 'package:moneyvesto/features/signup/signup_screen.dart';
@@ -11,6 +12,7 @@ class NavigationRoutes {
   static String login = '/login';
   static String signUp = '/sign-up';
   static String forgotPassword = '/forgot-password';
+  static String home = '/home';
 
   static List<GetPage> routes = [
     GetPage(name: initial, page: () => SplashScreen()),
@@ -18,5 +20,6 @@ class NavigationRoutes {
     GetPage(name: login, page: () => const LoginScreen()),
     GetPage(name: signUp, page: () => const SignUpScreen()),
     GetPage(name: forgotPassword, page: () => const ForgotPasswordScreen()),
+    GetPage(name: home, page: () => const HomeScreen(),),
   ];
 }

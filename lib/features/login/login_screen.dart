@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:moneyvesto/core/global_components/base_widget_container.dart';
 import 'package:moneyvesto/core/global_components/global_button.dart';
 import 'package:moneyvesto/core/global_components/global_text.dart';
+import 'package:moneyvesto/core/global_components/global_text_fields.dart';
 import 'package:moneyvesto/core/utils/route_utils.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -36,35 +37,16 @@ class LoginScreen extends StatelessWidget {
                   color: Colors.white,
                 ),
                 SizedBox(height: 40.h),
-                TextField(
+                GlobalTextField(
                   controller: emailController,
-                  style: TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'Email',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+                  hintText: 'Email',
+                  keyboardType: TextInputType.emailAddress,
                 ),
                 SizedBox(height: 20.h),
-                TextField(
+                GlobalTextField(
                   controller: passwordController,
-                  obscureText: true,
-                  style: TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    hintText: 'Password',
-                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.1),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8.r),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
+                  hintText: 'Password',
+                  isPassword: true,
                 ),
                 SizedBox(height: 10.h),
                 Align(
@@ -86,7 +68,7 @@ class LoginScreen extends StatelessWidget {
                   backgroundColor: Colors.black,
                   textColor: Colors.white,
                   onPressed: () {
-                    // Sign In action
+                    Get.offAllNamed(NavigationRoutes.home);
                   },
                   width: 1.sw,
                   fontSize: 14.sp,
