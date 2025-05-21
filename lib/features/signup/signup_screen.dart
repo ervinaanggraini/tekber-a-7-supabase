@@ -18,7 +18,7 @@ class SignUpScreen extends StatelessWidget {
     final confirmPasswordController = TextEditingController();
 
     return BaseWidgetContainer(
-      backgroundColor: const Color(0xFF3B48DC),
+      backgroundColor: const Color(0xFF002366),
       body: SingleChildScrollView(
         child: SafeArea(
           child: Padding(

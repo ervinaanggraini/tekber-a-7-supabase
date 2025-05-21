@@ -67,7 +67,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return BaseWidgetContainer(
-      backgroundColor: const Color(0xFF3B48DC),
+      backgroundColor: const Color(0xFF002366),
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),

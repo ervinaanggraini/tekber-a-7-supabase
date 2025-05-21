@@ -6,6 +6,7 @@ class GlobalTextField extends StatefulWidget {
   final String hintText;
   final bool isPassword;
   final TextInputType keyboardType;
+  final bool enabled; // properti baru opsional
 
   const GlobalTextField({
     super.key,
@@ -13,6 +14,7 @@ class GlobalTextField extends StatefulWidget {
     required this.hintText,
     this.isPassword = false,
     this.keyboardType = TextInputType.text,
+    this.enabled = true, // default enabled true
   });
 
   @override
@@ -35,10 +37,18 @@ class _GlobalTextFieldState extends State<GlobalTextField> {
       controller: widget.controller,
       obscureText: widget.isPassword ? obscure : false,
       keyboardType: widget.keyboardType,
-      style: const TextStyle(color: Colors.white),
+      enabled: widget.enabled, // pakai properti enabled
+      style: TextStyle(
+        color: widget.enabled ? Colors.white : Colors.white.withOpacity(0.5),
+      ),
       decoration: InputDecoration(
         hintText: widget.hintText,
-        hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+        hintStyle: TextStyle(
+          color:
+              widget.enabled
+                  ? Colors.white.withOpacity(0.6)
+                  : Colors.white.withOpacity(0.3),
+        ),
         filled: true,
         fillColor: Colors.white.withOpacity(0.1),
         border: OutlineInputBorder(
@@ -50,13 +60,19 @@ class _GlobalTextFieldState extends State<GlobalTextField> {
                 ? IconButton(
                   icon: Icon(
                     obscure ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.white.withOpacity(0.7),
+                    color:
+                        widget.enabled
+                            ? Colors.white.withOpacity(0.7)
+                            : Colors.white.withOpacity(0.3),
                   ),
-                  onPressed: () {
-                    setState(() {
-                      obscure = !obscure;
-                    });
-                  },
+                  onPressed:
+                      widget.enabled
+                          ? () {
+                            setState(() {
+                              obscure = !obscure;
+                            });
+                          }
+                          : null,
                 )
                 : null,
       ),
