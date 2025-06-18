@@ -1,4 +1,4 @@
-// File: lib/screens/education_simulation_screen.dart
+// lib/screens/education_simulation_screen.dart
 
 import 'dart:async';
 import 'dart:convert';
@@ -157,7 +157,6 @@ class _EducationAndSimulationScreenState
   bool _isEventLoading = false;
   int _tick = 0; // Tick counter for market events
 
-  // === PERUBAHAN: Setiap aset kini punya histori harganya sendiri ===
   final List<Map<String, dynamic>> _simulatedMarketAssets = [
     {
       'code': 'BBCA',
@@ -352,63 +351,103 @@ class _EducationAndSimulationScreenState
     });
   }
 
+  // === LOGIKA SIMULASI PASAR (YANG SUDAH DIPERBAIKI) ===
+
   void _startMarketSimulation() {
     _marketUpdateTimer = Timer.periodic(const Duration(seconds: 20), (timer) {
       if (!mounted) return;
 
       _tick++;
-      if (mounted) {
-        setState(() {
-          if (_tick % 2 == 0 && !_isEventLoading) {
+
+      // Jika tick genap, fetch event BARU, lalu update harga SETELAH event didapat
+      if (_tick % 2 == 0) {
+        if (!_isEventLoading) {
+          setState(() {
             _isEventLoading = true;
             _currentMarketEvent = null;
-            OpenRouterService.fetchMarketEvent().then((event) {
-              if (mounted && event != null)
-                setState(() => _currentMarketEvent = event);
-              if (mounted) setState(() => _isEventLoading = false);
-            });
-          }
-          final random = Random();
-          for (var asset in _simulatedMarketAssets) {
-            double eventMultiplier = 1.0;
-            if (_currentMarketEvent != null) {
-              final impact = _currentMarketEvent!['impact'];
-              if (impact['sector'] == asset['type'] ||
-                  impact['sector'] == 'Semua') {
-                eventMultiplier =
-                    impact['effect'] is int
-                        ? (impact['effect'] as int).toDouble()
-                        : impact['effect'];
-              }
-            }
-            double changePercent =
-                ((random.nextDouble() - 0.48) * 0.05) * eventMultiplier;
-            double newPrice = asset['price'] * (1 + changePercent);
-            asset['price'] = newPrice;
-            asset['lastChange'] = changePercent * 100;
+          });
 
-            // PERUBAHAN: Menyimpan histori harga per aset
-            (asset['priceHistory'] as List<double>).add(newPrice);
-            if ((asset['priceHistory'] as List).length > 20) {
-              (asset['priceHistory'] as List).removeAt(0);
-            }
-          }
-          double newPortfolioValue = _calculateTotalAssetValue() + _virtualCash;
-          _portfolioHistory.add(
-            FlSpot(_portfolioHistory.last.x + 1, newPortfolioValue),
-          );
-          if (_portfolioHistory.length > 20) _portfolioHistory.removeAt(0);
-          _checkMissions();
-        });
+          OpenRouterService.fetchMarketEvent()
+              .then((event) {
+                if (!mounted) return;
+
+                setState(() {
+                  _currentMarketEvent = event;
+                  _isEventLoading = false;
+                });
+                // Panggil pembaruan harga DI SINI, dengan event yang baru diterima
+                _updateAllAssetPrices(event: event);
+              })
+              .catchError((e) {
+                // Jika API error, tetap update harga tanpa event
+                if (mounted) {
+                  setState(() {
+                    _isEventLoading = false;
+                    _currentMarketEvent = null; // Pastikan event kosong
+                  });
+                }
+                _updateAllAssetPrices(event: null);
+              });
+        }
+      }
+      // Jika tick ganjil, langsung update harga dengan event yang ada (dari tick sebelumnya)
+      else {
+        _updateAllAssetPrices(event: _currentMarketEvent);
       }
     });
   }
+
+  void _updateAllAssetPrices({Map<String, dynamic>? event}) {
+    if (!mounted) return;
+
+    setState(() {
+      final random = Random();
+      for (var asset in _simulatedMarketAssets) {
+        double eventMultiplier = 1.0;
+        // Terapkan efek jika ada event yang relevan
+        if (event != null) {
+          final impact = event['impact'];
+          if (impact['sector'] == asset['type'] ||
+              impact['sector'] == 'Semua') {
+            eventMultiplier =
+                impact['effect'] is int
+                    ? (impact['effect'] as int).toDouble()
+                    : impact['effect'];
+          }
+        }
+
+        // Kalkulasi harga baru
+        double changePercent =
+            ((random.nextDouble() - 0.48) * 0.05) * eventMultiplier;
+        double newPrice = asset['price'] * (1 + changePercent);
+        asset['price'] = newPrice > 0 ? newPrice : 1; // Mencegah harga negatif
+        asset['lastChange'] = changePercent * 100;
+
+        // Simpan histori harga
+        (asset['priceHistory'] as List<double>).add(asset['price']);
+        if ((asset['priceHistory'] as List).length > 20) {
+          (asset['priceHistory'] as List).removeAt(0);
+        }
+      }
+
+      // Update histori portofolio & cek misi
+      double newPortfolioValue = _calculateTotalAssetValue() + _virtualCash;
+      _portfolioHistory.add(
+        FlSpot(_portfolioHistory.last.x + 1, newPortfolioValue),
+      );
+      if (_portfolioHistory.length > 20) _portfolioHistory.removeAt(0);
+      _checkMissions();
+    });
+  }
+
+  // === FUNGSI UTILITAS & LOGIKA GAME LAINNYA ===
 
   String formatCurrency(double amount) => NumberFormat.currency(
     locale: 'id_ID',
     symbol: 'Rp ',
     decimalDigits: 0,
   ).format(amount);
+
   double _calculateTotalAssetValue() {
     if (_mySimulatedAssets.isEmpty) return 0.0;
     double totalValue = 0;
@@ -474,6 +513,7 @@ class _EducationAndSimulationScreenState
   }
 
   void _buyAsset(Map<String, dynamic> asset, int quantity) {
+    if (quantity <= 0) return;
     num totalCost = (asset['price'] as num) * quantity;
     if (_virtualCash >= totalCost) {
       setState(() {
@@ -502,10 +542,13 @@ class _EducationAndSimulationScreenState
         _addTransaction('Beli', asset['code'], quantity, asset['price']);
       });
       _saveSimulationState();
+    } else {
+      Get.snackbar('Gagal Membeli', 'Uang virtual tidak mencukupi.');
     }
   }
 
   void _sellAsset(Map<String, dynamic> myAsset, int quantity) {
+    if (quantity <= 0) return;
     if (quantity > (myAsset['quantity'] as num)) {
       Get.snackbar('Gagal Menjual', 'Jumlah unit tidak mencukupi.');
       return;
@@ -523,7 +566,6 @@ class _EducationAndSimulationScreenState
     _saveSimulationState();
   }
 
-  // === PERUBAHAN: Mengirim histori harga ke service API ===
   void _handleAskAi(String assetCode, String assetName) {
     final asset = _simulatedMarketAssets.firstWhere(
       (a) => a['code'] == assetCode,
@@ -541,7 +583,7 @@ class _EducationAndSimulationScreenState
     ).then((analysis) {
       Get.back();
       Get.defaultDialog(
-        title: "Analisis AI untuk $assetCode",
+        title: "Analisis Vesto! untuk $assetCode",
         titleStyle: TextStyle(
           fontSize: 18.sp,
           fontWeight: FontWeight.bold,
@@ -566,6 +608,8 @@ class _EducationAndSimulationScreenState
       );
     });
   }
+
+  // === UI WIDGET BUILDERS ===
 
   @override
   Widget build(BuildContext context) {
@@ -611,20 +655,8 @@ class _EducationAndSimulationScreenState
           labelColor: AppColors.primaryAccent,
           unselectedLabelColor: AppColors.textLight.withOpacity(0.6),
           tabs: [
-            Tab(
-              child: GlobalText.medium(
-                'Simulasi Pasar',
-                fontSize: 14.sp,
-                color: Colors.white,
-              ),
-            ),
-            Tab(
-              child: GlobalText.medium(
-                'Materi Edukasi',
-                fontSize: 14.sp,
-                color: Colors.white,
-              ),
-            ),
+            Tab(child: GlobalText.medium('Simulasi Pasar', fontSize: 14.sp, color: AppColors.textLight,)),
+            Tab(child: GlobalText.medium('Materi Edukasi', fontSize: 14.sp, color: AppColors.textLight)),
           ],
         ),
       ),
@@ -826,10 +858,17 @@ class _EducationAndSimulationScreenState
         else if (_currentMarketEvent != null)
           _buildMarketEventCard()
         else
-          GlobalText.regular(
-            "Pasar sedang stabil... Refresh setiap 20 detik.",
-            fontSize: 13.sp,
-            color: AppColors.textLight.withOpacity(0.6),
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(vertical: 16.h),
+            child: Center(
+              child: GlobalText.regular(
+                "Pasar sedang stabil... Menunggu event berikutnya.",
+                fontSize: 13.sp,
+                color: AppColors.textLight.withOpacity(0.6),
+                textAlign: TextAlign.center,
+              ),
+            ),
           ),
         SizedBox(height: 16.h),
         ListView.builder(
@@ -841,9 +880,8 @@ class _EducationAndSimulationScreenState
             final asset = _simulatedMarketAssets[index];
             final color =
                 asset['lastChange'] >= 0 ? AppColors.success : AppColors.danger;
-            return InkWell( // 1. Dibungkus dengan InkWell agar bisa di-tap
+            return InkWell(
               onTap: () {
-                // 2. Navigasi ke halaman detail dan kirim data 'asset'
                 Get.to(() => const AssetDetailScreen(), arguments: asset);
               },
               borderRadius: BorderRadius.circular(12.r),
@@ -865,7 +903,11 @@ class _EducationAndSimulationScreenState
                         height: 30.h,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) {
-                          return Icon(asset['icon'], color: AppColors.textLight, size: 20.sp);
+                          return Icon(
+                            asset['icon'],
+                            color: AppColors.textLight,
+                            size: 20.sp,
+                          );
                         },
                       ),
                     ),
@@ -905,7 +947,8 @@ class _EducationAndSimulationScreenState
                         size: 20.sp,
                       ),
                       tooltip: "Tanya Analisis AI",
-                      onPressed: () => _handleAskAi(asset['code'], asset['name']),
+                      onPressed:
+                          () => _handleAskAi(asset['code'], asset['name']),
                     ),
                     ElevatedButton(
                       onPressed: () => _showTransactionDialog(true, asset),
@@ -954,7 +997,7 @@ class _EducationAndSimulationScreenState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          GlobalText.bold("HEADLINE DARI AI:", color: color, fontSize: 12.sp),
+          GlobalText.bold("BREAKING NEWS:", color: color, fontSize: 12.sp),
           SizedBox(height: 4.h),
           GlobalText.semiBold(
             event['headline'],
@@ -1378,10 +1421,13 @@ class _EducationAndSimulationScreenState
             color: AppColors.textLight.withOpacity(0.8),
           ),
           if (!isBuy)
-            GlobalText.regular(
-              'Anda memiliki: ${(assetData['quantity'] as num).toInt()} $unitType',
-              fontSize: 12.sp,
-              color: AppColors.textLight.withOpacity(0.6),
+            Padding(
+              padding: EdgeInsets.only(top: 4.h),
+              child: GlobalText.regular(
+                'Anda memiliki: ${(assetData['quantity'] as num).toInt()} $unitType',
+                fontSize: 12.sp,
+                color: AppColors.textLight.withOpacity(0.6),
+              ),
             ),
           SizedBox(height: 16.h),
           TextField(
@@ -1410,7 +1456,7 @@ class _EducationAndSimulationScreenState
         ),
         onPressed: () {
           if (controller.text.isNotEmpty) {
-            int quantity = int.parse(controller.text);
+            int quantity = int.tryParse(controller.text) ?? 0;
             if (isBuy)
               _buyAsset(marketAsset, quantity);
             else

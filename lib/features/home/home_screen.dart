@@ -1,13 +1,16 @@
+// lib/screens/home_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_expandable_fab/flutter_expandable_fab.dart'; // <-- 1. Impor paket
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 
 import 'package:moneyvesto/core/constants/color.dart';
 import 'package:moneyvesto/core/global_components/base_widget_container.dart';
 import 'package:moneyvesto/core/global_components/global_text.dart';
 import 'package:moneyvesto/core/utils/route_utils.dart';
+import 'package:moneyvesto/features/home/widgets/add_transactions.dart';
 import 'package:moneyvesto/features/home/widgets/finance_summary_card.dart';
 import 'package:moneyvesto/features/home/widgets/home_menu_button.dart';
 
@@ -20,9 +23,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   DateTime? lastBackPressed;
-  final _key = GlobalKey<ExpandableFabState>(); // <-- 2. Tambahkan GlobalKey
+  final _key = GlobalKey<ExpandableFabState>();
 
-  // --- DATA DUMMY UNTUK WIDGET BARU ---
+  // --- DATA DUMMY (nantinya bisa diganti dengan state management) ---
   final List<Map<String, dynamic>> _recentTransactions = [
     {
       'category': 'Makan di Luar',
@@ -81,16 +84,56 @@ class _HomeScreenState extends State<HomeScreen> {
     ).format(amount);
   }
 
+  // Method helper untuk memanggil dialog agar kode tidak berulang
+  void _handleAddTransaction(TransactionType type) async {
+    // Tutup menu FAB terlebih dahulu untuk UX yang lebih baik
+    final state = _key.currentState;
+    if (state != null && state.isOpen) {
+      state.toggle();
+    }
+
+    // Panggil dialog dan tunggu hasilnya
+    final newTransaction = await showAddTransactionDialog(
+      context,
+      initialType: type, // Kirim tipe yang sesuai
+    );
+
+    // Jika user menekan simpan, `newTransaction` akan berisi data
+    if (newTransaction != null && mounted) {
+      print("Transaksi Baru Disimpan: $newTransaction");
+
+      // Di sini Anda bisa menambahkan logika untuk memperbarui state
+      // aplikasi dengan data transaksi yang baru. Contoh:
+      // setState(() {
+      //   _recentTransactions.insert(0, ...);
+      // });
+
+      final description = newTransaction['description'];
+      final transType =
+          newTransaction['transaction_type'] == 'deposit'
+              ? 'Pemasukan'
+              : 'Pengeluaran';
+
+      ScaffoldMessenger.of(context)
+        ..removeCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('$transType "$description" berhasil ditambahkan!'),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: _onWillPop,
       child: BaseWidgetContainer(
         backgroundColor: AppColors.background,
-        // --- 3. Tambahkan properti FAB ke BaseWidgetContainer ---
         floatingActionButtonLocation: ExpandableFab.location,
         floatingActionButton: _buildExpandableFab(),
-        // ----------------------------------------------------
         body: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 16.w),
@@ -168,12 +211,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icons.pie_chart_outline_rounded,
                         label: 'Analitics',
                         onTap: () => Get.toNamed(NavigationRoutes.analytics),
-                      ), // Asumsi analytics ada di chatbot
+                      ),
                       HomeMenuButton(
                         icon: Icons.show_chart_rounded,
                         label: 'Invest',
                         onTap: () => Get.toNamed(NavigationRoutes.invest),
-                      ), // Ikon diubah
+                      ),
                       HomeMenuButton(
                         icon: Icons.article_outlined,
                         label: 'News',
@@ -183,7 +226,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   SizedBox(height: 32.h),
 
-                  // --- BAGIAN BARU: TRANSAKSI TERAKHIR ---
+                  // --- BAGIAN TRANSAKSI TERAKHIR ---
                   _buildSectionHeader(
                     title: 'Transaksi Terakhir',
                     onTap: () => Get.toNamed(NavigationRoutes.financeReport),
@@ -192,14 +235,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   _buildRecentTransactionsList(),
                   SizedBox(height: 32.h),
 
-                  // --- BAGIAN BARU: BERITA TERBARU ---
+                  // --- BAGIAN BERITA TERBARU ---
                   _buildSectionHeader(
                     title: 'Berita Terbaru',
                     onTap: () => Get.toNamed(NavigationRoutes.news),
                   ),
                   SizedBox(height: 12.h),
                   _buildLatestNewsCard(),
-                  SizedBox(height: 20.h), // Padding bawah
+                  SizedBox(height: 20.h),
                 ],
               ),
             ),
@@ -234,18 +277,16 @@ class _HomeScreenState extends State<HomeScreen> {
         shape: const CircleBorder(),
       ),
       children: [
+        // --- Tombol Pengeluaran ---
         FloatingActionButton.small(
           heroTag: "expense",
           backgroundColor: AppColors.danger,
           child: const Icon(Icons.arrow_downward_rounded),
           onPressed: () {
-            final state = _key.currentState;
-            if (state != null && state.isOpen) {
-              state.toggle();
-            }
-            Get.toNamed(NavigationRoutes.chatBot);
+            _handleAddTransaction(TransactionType.withdrawal);
           },
         ),
+        // --- Tombol ChatBot ---
         FloatingActionButton.small(
           heroTag: "chatBot",
           backgroundColor: AppColors.primaryAccent,
@@ -258,16 +299,13 @@ class _HomeScreenState extends State<HomeScreen> {
             Get.toNamed(NavigationRoutes.chatBot);
           },
         ),
+        // --- Tombol Pemasukan ---
         FloatingActionButton.small(
           heroTag: "income",
           backgroundColor: AppColors.success,
           child: const Icon(Icons.arrow_upward_rounded),
           onPressed: () {
-            final state = _key.currentState;
-            if (state != null && state.isOpen) {
-              state.toggle();
-            }
-            Get.toNamed(NavigationRoutes.chatBot);
+            _handleAddTransaction(TransactionType.deposit);
           },
         ),
       ],
