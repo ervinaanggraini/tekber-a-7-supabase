@@ -1,3 +1,5 @@
+// File: lib/screens/education_simulation_screen.dart
+
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
@@ -11,9 +13,10 @@ import 'package:animated_flip_counter/animated_flip_counter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:moneyvesto/core/constants/color.dart';
 import 'package:moneyvesto/core/global_components/global_text.dart';
+import 'package:moneyvesto/features/invest/assets_detail_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OpenRouterService {
   static final String? _apiKey = dotenv.env['OPENROUTER_API_KEY'];
@@ -152,6 +155,7 @@ class _EducationAndSimulationScreenState
   final List<FlSpot> _portfolioHistory = [const FlSpot(0, 100000000)];
   Map<String, dynamic>? _currentMarketEvent;
   bool _isEventLoading = false;
+  int _tick = 0; // Tick counter for market events
 
   // === PERUBAHAN: Setiap aset kini punya histori harganya sendiri ===
   final List<Map<String, dynamic>> _simulatedMarketAssets = [
@@ -351,11 +355,11 @@ class _EducationAndSimulationScreenState
   void _startMarketSimulation() {
     _marketUpdateTimer = Timer.periodic(const Duration(seconds: 20), (timer) {
       if (!mounted) return;
-      int tick = 0;
-      tick++;
+
+      _tick++;
       if (mounted) {
         setState(() {
-          if (tick % 2 == 0 && !_isEventLoading) {
+          if (_tick % 2 == 0 && !_isEventLoading) {
             _isEventLoading = true;
             _currentMarketEvent = null;
             OpenRouterService.fetchMarketEvent().then((event) {
@@ -607,9 +611,20 @@ class _EducationAndSimulationScreenState
           labelColor: AppColors.primaryAccent,
           unselectedLabelColor: AppColors.textLight.withOpacity(0.6),
           tabs: [
-            Tab(child: GlobalText.medium('Simulasi Pasar', fontSize: 14.sp, color: Colors.white,)),
-            Tab(child: GlobalText.medium('Materi Edukasi', fontSize: 14.sp, color: Colors.white,
-              )),
+            Tab(
+              child: GlobalText.medium(
+                'Simulasi Pasar',
+                fontSize: 14.sp,
+                color: Colors.white,
+              ),
+            ),
+            Tab(
+              child: GlobalText.medium(
+                'Materi Edukasi',
+                fontSize: 14.sp,
+                color: Colors.white,
+              ),
+            ),
           ],
         ),
       ),
@@ -826,81 +841,92 @@ class _EducationAndSimulationScreenState
             final asset = _simulatedMarketAssets[index];
             final color =
                 asset['lastChange'] >= 0 ? AppColors.success : AppColors.danger;
-            return Container(
-              margin: EdgeInsets.only(bottom: 10.h),
-              padding: EdgeInsets.all(12.w),
-              decoration: BoxDecoration(
-                color: AppColors.secondaryAccent,
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 22.r,
-                    backgroundColor: AppColors.background,
-                    child: Icon(
-                      asset['icon'],
-                      color: AppColors.textLight,
-                      size: 20.sp,
-                    ),
-                  ),
-                  SizedBox(width: 12.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        GlobalText.medium(
-                          asset['code'],
-                          color: AppColors.textLight,
-                          fontSize: 14.sp,
-                        ),
-                        SizedBox(height: 4.h),
-                        Row(
-                          children: [
-                            GlobalText.regular(
-                              formatCurrency(asset['price']),
-                              color: AppColors.textLight.withOpacity(0.9),
-                              fontSize: 13.sp,
-                            ),
-                            SizedBox(width: 8.w),
-                            GlobalText.regular(
-                              '${asset['lastChange'] >= 0 ? '+' : ''}${asset['lastChange'].toStringAsFixed(2)}%',
-                              color: color,
-                              fontSize: 12.sp,
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.psychology_alt_rounded,
-                      color: AppColors.primaryAccent.withOpacity(0.8),
-                      size: 20.sp,
-                    ),
-                    tooltip: "Tanya Analisis AI",
-                    onPressed: () => _handleAskAi(asset['code'], asset['name']),
-                  ),
-                  ElevatedButton(
-                    onPressed: () => _showTransactionDialog(true, asset),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryAccent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.r),
-                      ),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 16.w,
-                        vertical: 8.h,
+            return InkWell( // 1. Dibungkus dengan InkWell agar bisa di-tap
+              onTap: () {
+                // 2. Navigasi ke halaman detail dan kirim data 'asset'
+                Get.to(() => const AssetDetailScreen(), arguments: asset);
+              },
+              borderRadius: BorderRadius.circular(12.r),
+              child: Container(
+                margin: EdgeInsets.only(bottom: 10.h),
+                padding: EdgeInsets.all(12.w),
+                decoration: BoxDecoration(
+                  color: AppColors.secondaryAccent,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 22.r,
+                      backgroundColor: AppColors.background,
+                      child: Image.asset(
+                        'assets/images/${asset['code']}.png',
+                        width: 30.w,
+                        height: 30.h,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(asset['icon'], color: AppColors.textLight, size: 20.sp);
+                        },
                       ),
                     ),
-                    child: GlobalText.medium(
-                      'Beli',
-                      fontSize: 13.sp,
-                      color: Colors.white,
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          GlobalText.medium(
+                            asset['code'],
+                            color: AppColors.textLight,
+                            fontSize: 14.sp,
+                          ),
+                          SizedBox(height: 4.h),
+                          Row(
+                            children: [
+                              GlobalText.regular(
+                                formatCurrency(asset['price']),
+                                color: AppColors.textLight.withOpacity(0.9),
+                                fontSize: 13.sp,
+                              ),
+                              SizedBox(width: 8.w),
+                              GlobalText.regular(
+                                '${asset['lastChange'] >= 0 ? '+' : ''}${asset['lastChange'].toStringAsFixed(2)}%',
+                                color: color,
+                                fontSize: 12.sp,
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
+                    IconButton(
+                      icon: Icon(
+                        Icons.psychology_alt_rounded,
+                        color: AppColors.primaryAccent.withOpacity(0.8),
+                        size: 20.sp,
+                      ),
+                      tooltip: "Tanya Analisis AI",
+                      onPressed: () => _handleAskAi(asset['code'], asset['name']),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => _showTransactionDialog(true, asset),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryAccent,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.w,
+                          vertical: 8.h,
+                        ),
+                      ),
+                      child: GlobalText.medium(
+                        'Beli',
+                        fontSize: 13.sp,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           },
@@ -973,6 +999,7 @@ class _EducationAndSimulationScreenState
             value: totalPortfolioValue,
             prefix: "Rp ",
             thousandSeparator: ".",
+            fractionDigits: 0,
             textStyle: GoogleFonts.poppins(
               fontSize: 28.sp,
               color: AppColors.textLight,
@@ -1444,6 +1471,7 @@ class _EducationAndSimulationScreenState
                 "Selamat! Anda telah mencapai Level $_level",
                 color: Colors.white.withOpacity(0.9),
                 fontSize: 16.sp,
+                textAlign: TextAlign.center,
               ),
               SizedBox(height: 4.h),
               GlobalText.medium(
