@@ -18,7 +18,7 @@ class MainApp extends StatelessWidget {
           debugShowCheckedModeBanner: true,
           initialRoute: NavigationRoutes.initial,
           getPages: NavigationRoutes.routes,
-          defaultTransition: Transition.fadeIn,
+          // defaultTransition: Transition.fadeIn,
           // Widget utama
           home: child,
         );

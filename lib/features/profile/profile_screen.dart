@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:moneyvesto/core/constants/color.dart';
 import 'package:moneyvesto/core/global_components/global_button.dart';
 import 'package:moneyvesto/core/global_components/global_text.dart';
 import 'package:moneyvesto/core/global_components/global_text_fields.dart';
@@ -18,13 +20,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController emailController;
   late TextEditingController phoneController;
 
-  bool isEditing = false; // state apakah sedang edit atau tidak
+  bool isEditing = false;
 
   @override
   void initState() {
     super.initState();
-    emailController = TextEditingController(text: 'john.doe@example.com');
-    phoneController = TextEditingController(text: '081234567890');
+    emailController = TextEditingController(
+      text: 'john.doe@example.com',
+    );
+    phoneController = TextEditingController(
+      text: '081234567890',
+    );
   }
 
   @override
@@ -36,47 +42,67 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   void onEditPressed() {
     setState(() {
+      if (isEditing) {
+        print('Saving data: ${emailController.text}, ${phoneController.text}');
+      }
       isEditing = !isEditing;
     });
   }
 
   void onLogoutPressed() {
-showDialog(
+    showDialog(
       context: context,
       builder:
           (context) => AlertDialog(
-            backgroundColor: const Color(0xFF002366), // background gelap
-            title: const Text(
-              'Logout',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+            backgroundColor:
+                AppColors.secondaryAccent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.r),
             ),
-            content: const Text(
+            title: GlobalText.semiBold(
+              'Logout',
+              color: AppColors.textLight,
+              fontSize: 18.sp,
+            ),
+            content: GlobalText.regular(
               'Are you sure you want to logout?',
-              style: TextStyle(color: Colors.white70),
+              color: AppColors.textLight.withOpacity(0.85),
+              fontSize: 14.sp,
+            ),
+            actionsPadding: EdgeInsets.symmetric(
+              horizontal: 12.w,
+              vertical: 8.h,
             ),
             actions: [
               TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(
+                onPressed: () => Get.back(),
+                child: GlobalText.medium(
                   'Cancel',
-                  style: TextStyle(color: Colors.white70),
+                  color: AppColors.textLight.withOpacity(0.7),
+                  fontSize: 14.sp,
                 ),
               ),
               TextButton(
                 onPressed: () {
-                  Navigator.pop(context);
-                  // Tambahkan aksi logout di sini
+                  Get.back(); // Tutup dialog
+                  // TODO: Tambahkan aksi logout di sini (misal clear session, navigasi ke login)
+                  // Get.offAllNamed(NavigationRoutes.login); // Contoh navigasi setelah logout
+                  print('Logout button pressed');
                 },
                 style: TextButton.styleFrom(
-                  foregroundColor:
-                      Colors.redAccent, // tombol logout warna merah
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12.w,
+                    vertical: 8.h,
+                  ),
                 ),
-                child: const Text(
+                child: GlobalText.medium(
+                  // Menggunakan GlobalText
                   'Logout',
-                  style: TextStyle(fontWeight: FontWeight.bold),
+                  color:
+                      AppColors
+                          .danger, // Menggunakan warna bahaya dari AppColors (jika ada)
+                  // atau Colors.redAccent.shade200
+                  fontSize: 14.sp,
                 ),
               ),
             ],
@@ -86,71 +112,126 @@ showDialog(
 
   @override
   Widget build(BuildContext context) {
+    // Untuk GlobalTextField, pastikan internal stylingnya mendukung dark theme:
+    // - hintStyle: color: AppColors.textLight.withOpacity(0.5)
+    // - style (input text): color: AppColors.textLight
+    // - border color (enabled): AppColors.secondaryAccent.withOpacity(0.7) atau AppColors.textLight.withOpacity(0.3)
+    // - border color (focused): AppColors.primaryAccent
+    // - background color (jika ada): transparan atau AppColors.secondaryAccent.withOpacity(0.3)
+    // - cursorColor: AppColors.primaryAccent
+    // - disabled state: warna lebih redup (misal background AppColors.secondaryAccent.withOpacity(0.2))
+
     return Scaffold(
-      backgroundColor: const Color(0xFF002366),
+      backgroundColor: AppColors.background, // Latar utama disesuaikan
       appBar: AppBar(
-        backgroundColor: const Color(0xFF002366),
+        backgroundColor: AppColors.background, // Latar AppBar disesuaikan
         elevation: 0,
-        title: GlobalText.bold(
+        title: GlobalText.semiBold(
+          // Menggunakan semiBold untuk konsistensi
           'Profile',
-          color: Colors.white,
-          fontSize: 20.sp,
+          color: AppColors.textLight,
+          fontSize: 18.sp, // Ukuran font disesuaikan
         ),
         centerTitle: true,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, color: Colors.white,),
-          onPressed: () => Navigator.of(context).pop(),
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: AppColors.textLight,
+            size: 20.sp,
+          ),
+          onPressed: () => Get.back(), // Menggunakan Get.back()
         ),
         actions: [
-          TextButton(
-            onPressed: onEditPressed,
-            child: Text(
-              isEditing ? 'Save' : 'Edit',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 16.sp,
-                fontWeight: FontWeight.bold,
+          Padding(
+            padding: EdgeInsets.only(right: 8.w),
+            child: TextButton(
+              onPressed: onEditPressed,
+              style: TextButton.styleFrom(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+              ),
+              child: GlobalText.medium(
+                // Menggunakan GlobalText
+                isEditing ? 'Save' : 'Edit',
+                color:
+                    AppColors
+                        .primaryAccent, // Menggunakan primaryAccent untuk tombol aksi
+                fontSize: 15.sp,
               ),
             ),
           ),
         ],
       ),
-
       body: Padding(
-        padding: EdgeInsets.all(16.w),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
         child: Column(
           children: [
+            SizedBox(height: 20.h),
             CircleAvatar(
-              radius: 50.r,
-              backgroundImage: NetworkImage(avatarUrl),
-              backgroundColor: Colors.white.withOpacity(0.2),
+              radius: 55.r, // Sedikit lebih besar
+              backgroundColor:
+                  AppColors.secondaryAccent, // Warna placeholder avatar
+              child: CircleAvatar(
+                radius: 50.r,
+                backgroundImage: NetworkImage(avatarUrl),
+                backgroundColor: AppColors.secondaryAccent.withOpacity(0.5),
+                onBackgroundImageError: (exception, stackTrace) {
+                  // Penanganan error gambar
+                  print('Error loading avatar: $exception');
+                },
+                child:
+                    avatarUrl.isEmpty
+                        ? Icon(
+                          Icons.person,
+                          size: 50.r,
+                          color: AppColors.textLight.withOpacity(0.7),
+                        )
+                        : null,
+              ),
             ),
             SizedBox(height: 16.h),
-            GlobalText.semiBold(userName, color: Colors.white, fontSize: 24.sp),
-            SizedBox(height: 24.h),
+            GlobalText.semiBold(
+              userName,
+              color: AppColors.textLight,
+              fontSize: 22.sp,
+            ),
+            SizedBox(height: 30.h),
             GlobalTextField(
               controller: emailController,
               hintText: 'Email',
               keyboardType: TextInputType.emailAddress,
-              isPassword: false,
               enabled: isEditing,
             ),
-            SizedBox(height: 16.h),
+            SizedBox(height: 18.h),
             GlobalTextField(
               controller: phoneController,
               hintText: 'Phone Number',
               keyboardType: TextInputType.phone,
-              isPassword: false,
               enabled: isEditing,
             ),
-            const Spacer(),
+            const Spacer(), // Mendorong tombol Logout ke bawah
             GlobalButton(
-              backgroundColor: Colors.red,
+              onPressed: onLogoutPressed, // Menambahkan onPressed
+              backgroundColor: AppColors.danger.withOpacity(
+                0.85,
+              ), // Menggunakan warna bahaya dari AppColors
+              // atau Colors.redAccent.shade400
               text: 'Logout',
-            )
+              textColor:
+                  AppColors.textLight, // Pastikan GlobalButton mengatur ini
+              width: 1.sw - 40.w, // Lebar disesuaikan dengan padding
+              height: 48.h,
+            ),
+            SizedBox(height: 20.h), // Padding di bawah tombol logout
           ],
         ),
       ),
     );
   }
 }
+
+// Pastikan AppColors memiliki definisi untuk AppColors.danger, contoh:
+// static const Color danger = Color(0xFFD32F2F); // Merah tua
+// Jika belum ada, Anda bisa gunakan Colors.redAccent.shade400 atau sejenisnya.

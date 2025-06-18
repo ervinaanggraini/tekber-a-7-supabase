@@ -37,6 +37,15 @@ dependencies:
   lottie: ^3.3.1
   google_fonts: ^6.2.1
   fl_chart: ^1.0.0
+  flutter_launcher_icons: ^0.14.3
+  intl: ^0.20.2
+  image_picker: ^1.1.2
+  http: ^1.4.0
+  shared_preferences: ^2.5.3
+  flutter_expandable_fab: ^2.5.1
+  url_launcher: ^6.3.1
+  animated_flip_counter: ^0.3.4
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
@@ -53,7 +62,11 @@ dev_dependencies:
   http_parser: ^4.1.2
   flutter_svg: ^2.0.17
   flutter_screenutil: ^5.9.3
-  
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -68,8 +81,11 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - .env 
     - assets/images/
     - assets/lottie/
+    - assets/icons/
+    - assets/svgs/
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

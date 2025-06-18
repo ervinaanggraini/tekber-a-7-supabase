@@ -10,6 +10,8 @@ class GlobalText extends StatelessWidget {
   final TextAlign textAlign;
   final double lineHeight;
   final VoidCallback? onTap;
+  final int? maxLines; // Ditambahkan
+  final TextOverflow? overflow; // Ditambahkan
 
   const GlobalText({
     super.key,
@@ -20,6 +22,8 @@ class GlobalText extends StatelessWidget {
     this.textAlign = TextAlign.center,
     this.lineHeight = 1.2,
     this.onTap,
+    this.maxLines, // Ditambahkan
+    this.overflow = TextOverflow.ellipsis, // Default overflow adalah elipsis
   });
 
   @override
@@ -27,6 +31,8 @@ class GlobalText extends StatelessWidget {
     final textWidget = Text(
       text,
       textAlign: textAlign,
+      maxLines: maxLines, // Diterapkan
+      overflow: overflow, // Diterapkan
       style: GoogleFonts.poppins(
         fontSize: fontSize.sp,
         fontWeight: fontWeight,
@@ -50,6 +56,8 @@ class GlobalText extends StatelessWidget {
     Color color = Colors.blue,
     TextAlign textAlign = TextAlign.center,
     required VoidCallback onTap,
+    int? maxLines,
+    TextOverflow? overflow,
   }) {
     return GlobalText(
       key: key,
@@ -59,6 +67,8 @@ class GlobalText extends StatelessWidget {
       color: color,
       textAlign: textAlign,
       onTap: onTap,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
 
@@ -69,6 +79,8 @@ class GlobalText extends StatelessWidget {
     Color color = Colors.black,
     TextAlign textAlign = TextAlign.center,
     double lineHeight = 1.2,
+    int? maxLines,
+    TextOverflow? overflow,
   }) {
     return GlobalText(
       key: key,
@@ -78,6 +90,8 @@ class GlobalText extends StatelessWidget {
       color: color,
       textAlign: textAlign,
       lineHeight: lineHeight,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
 
@@ -88,6 +102,8 @@ class GlobalText extends StatelessWidget {
     Color color = Colors.black,
     TextAlign textAlign = TextAlign.center,
     double lineHeight = 1.2,
+    int? maxLines,
+    TextOverflow? overflow,
   }) {
     return GlobalText(
       key: key,
@@ -97,6 +113,8 @@ class GlobalText extends StatelessWidget {
       color: color,
       textAlign: textAlign,
       lineHeight: lineHeight,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
 
@@ -107,6 +125,8 @@ class GlobalText extends StatelessWidget {
     Color color = Colors.black,
     TextAlign textAlign = TextAlign.center,
     double lineHeight = 1.2,
+    int? maxLines,
+    TextOverflow? overflow,
   }) {
     return GlobalText(
       key: key,
@@ -116,6 +136,8 @@ class GlobalText extends StatelessWidget {
       color: color,
       textAlign: textAlign,
       lineHeight: lineHeight,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
 
@@ -126,6 +148,8 @@ class GlobalText extends StatelessWidget {
     Color color = Colors.black,
     TextAlign textAlign = TextAlign.center,
     double lineHeight = 1.2,
+    int? maxLines,
+    TextOverflow? overflow,
   }) {
     return GlobalText(
       key: key,
@@ -135,6 +159,8 @@ class GlobalText extends StatelessWidget {
       color: color,
       textAlign: textAlign,
       lineHeight: lineHeight,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
 
@@ -145,6 +171,8 @@ class GlobalText extends StatelessWidget {
     Color color = Colors.black,
     TextAlign textAlign = TextAlign.center,
     double lineHeight = 1.2,
+    int? maxLines,
+    TextOverflow? overflow,
   }) {
     return GlobalText(
       key: key,
@@ -154,6 +182,8 @@ class GlobalText extends StatelessWidget {
       color: color,
       textAlign: textAlign,
       lineHeight: lineHeight,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
 
@@ -164,6 +194,8 @@ class GlobalText extends StatelessWidget {
     Color color = Colors.black,
     TextAlign textAlign = TextAlign.center,
     double lineHeight = 1.2,
+    int? maxLines,
+    TextOverflow? overflow,
   }) {
     return GlobalText(
       key: key,
@@ -173,6 +205,8 @@ class GlobalText extends StatelessWidget {
       color: color,
       textAlign: textAlign,
       lineHeight: lineHeight,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
 }

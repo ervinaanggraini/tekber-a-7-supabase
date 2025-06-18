@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:moneyvesto/core/constants/color.dart';
+import 'package:moneyvesto/core/global_components/global_text.dart'; // Ditambahkan import AppColors
 
 class HomeMenuButton extends StatelessWidget {
   final IconData icon;
@@ -17,34 +19,56 @@ class HomeMenuButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color backgroundColor =
-        isActive ? const Color(0xFFE8F1FF) : Colors.grey.shade200;
-    Color iconColor = isActive ? const Color(0xFF003366) : Colors.grey;
-    Color textColor = isActive ? Colors.black : Colors.grey;
+    Color backgroundColor;
+    Color iconColor;
+    Color textColor;
+
+    if (isActive) {
+      backgroundColor = AppColors.primaryAccent.withOpacity(
+        0.15,
+      ); // Latar sedikit transparan dari aksen primer
+      iconColor =
+          AppColors.primaryAccent; // Ikon menggunakan warna aksen primer
+      textColor = AppColors.textLight; // Teks label terang
+    } else {
+      backgroundColor = AppColors.secondaryAccent.withOpacity(
+        0.5,
+      ); // Latar abu-abu sekunder lebih transparan
+      iconColor = AppColors.textLight.withOpacity(0.4); // Ikon redup
+      textColor = AppColors.textLight.withOpacity(0.6); // Teks label redup
+    }
 
     return GestureDetector(
       onTap: isActive ? onTap : null,
-      child: Column(
-        children: [
-          Container(
-            width: 64.w,
-            height: 64.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: backgroundColor,
+      child: Container(
+        // Membungkus Column dengan Container untuk padding jika perlu
+        width: 70.w, // Atur lebar agar label panjang tidak terlalu mepet
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56.w, // Ukuran lingkaran sedikit disesuaikan
+              height: 56.w,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: backgroundColor,
+              ),
+              child: Icon(
+                icon,
+                color: iconColor,
+                size: 26.sp,
+              ), // Ukuran ikon disesuaikan
             ),
-            child: Icon(icon, color: iconColor, size: 28.sp),
-          ),
-          SizedBox(height: 8.h),
-          Text(
-            label,
-            style: TextStyle(
+            SizedBox(height: 8.h),
+            GlobalText.regular(
+              // Menggunakan GlobalText
+              label,
               fontSize: 12.sp,
               color: textColor,
-              fontWeight: FontWeight.w500,
+              textAlign: TextAlign.center,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

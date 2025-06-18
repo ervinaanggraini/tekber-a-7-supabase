@@ -1,6 +1,8 @@
+import 'package:get/get.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:moneyvesto/core/constants/color.dart'; // Impor AppColors
 import 'package:moneyvesto/core/global_components/global_text.dart';
 
 class FinanceReportScreen extends StatefulWidget {
@@ -13,7 +15,7 @@ class FinanceReportScreen extends StatefulWidget {
 class _FinanceReportScreenState extends State<FinanceReportScreen> {
   String selectedMonth = 'Mei 2025';
 
-final List<Map<String, dynamic>> transactions = [
+  final List<Map<String, dynamic>> transactions = [
     {
       'date': '20 Mei 2025',
       'category': 'Belanja Harian',
@@ -45,12 +47,6 @@ final List<Map<String, dynamic>> transactions = [
       'isIncome': false,
     },
     {
-      'date': '23 Mei 2025',
-      'category': 'Bonus Project',
-      'amount': 2000000,
-      'isIncome': true,
-    },
-    {
       'date': '24 Mei 2025',
       'category': 'Langganan Streaming',
       'amount': 120000,
@@ -79,44 +75,70 @@ final List<Map<String, dynamic>> transactions = [
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: GlobalText.medium(
           'Laporan',
-          color: Colors.black,
+          color: AppColors.textLight,
           fontSize: 20.sp,
         ),
         centerTitle: true,
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.background,
         elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.arrow_back_ios_new,
+            color: AppColors.textLight,
+            size: 20.sp,
+          ),
+          onPressed: () => Get.back(),
+        ),
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.w),
+        padding: EdgeInsets.symmetric(horizontal: 16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            DropdownButton<String>(
-              value: selectedMonth,
-              iconEnabledColor: Colors.black,
-              style: TextStyle(color: Colors.black, fontSize: 16.sp),
-              underline: Container(height: 1, color: Colors.black12),
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() => selectedMonth = value);
-                }
-              },
-              items:
-                  ['Mei 2025']
-                      .map<DropdownMenuItem<String>>(
-                        (month) =>
-                            DropdownMenuItem(value: month, child: Text(month)),
-                      )
-                      .toList(),
+            Container(
+              margin: EdgeInsets.only(bottom: 24.h, top: 8.h),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
+              decoration: BoxDecoration(
+                color: AppColors.secondaryAccent,
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: DropdownButton<String>(
+                value: selectedMonth,
+                iconEnabledColor: AppColors.textLight,
+                style: TextStyle(
+                  color: AppColors.textLight,
+                  fontSize: 14.sp,
+                  fontFamily: 'Poppins',
+                ),
+                underline: Container(),
+                isExpanded: true,
+                dropdownColor: AppColors.secondaryAccent,
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => selectedMonth = value);
+                  }
+                },
+                items:
+                    ['Mei 2025']
+                        .map<DropdownMenuItem<String>>(
+                          (month) => DropdownMenuItem(
+                            value: month,
+                            child: GlobalText.regular(
+                              month,
+                              color: AppColors.textLight,
+                            ),
+                          ),
+                        )
+                        .toList(),
+              ),
             ),
 
-            SizedBox(height: 24.h),
-
-            // CHART: Bar chart harian
+            // Anda dapat menambahkan Chart di sini jika diperlukan
+                        // CHART: Bar chart dengan warna baru
             SizedBox(
               height: 200,
               child: BarChart(
@@ -127,7 +149,7 @@ final List<Map<String, dynamic>> transactions = [
                       barRods: [
                         BarChartRodData(
                           toY: 0.002,
-                          color: Colors.red,
+                          color: AppColors.danger, // Ganti warna
                           width: 16,
                           borderRadius: BorderRadius.circular(4),
                         ),
@@ -138,12 +160,13 @@ final List<Map<String, dynamic>> transactions = [
                       barRods: [
                         BarChartRodData(
                           toY: 5,
-                          color: Colors.green,
+                          color: AppColors.success, // Ganti warna
                           width: 16,
                           borderRadius: BorderRadius.circular(4),
                         ),
                       ],
                     ),
+                    // Anda perlu menambahkan data lainnya di sini agar chart lengkap
                   ],
                   titlesData: FlTitlesData(
                     bottomTitles: AxisTitles(
@@ -152,7 +175,11 @@ final List<Map<String, dynamic>> transactions = [
                         getTitlesWidget: (value, meta) {
                           return Padding(
                             padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(value.toInt().toString()),
+                            child: GlobalText.regular(
+                              value.toInt().toString(),
+                              color: AppColors.textLight.withOpacity(0.7),
+                              fontSize: 12.sp,
+                            ),
                           );
                         },
                       ),
@@ -160,22 +187,35 @@ final List<Map<String, dynamic>> transactions = [
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        interval: 1,
+                        interval: 5, // Ubah interval agar tidak terlalu padat
                         getTitlesWidget: (value, meta) {
-                          if (value == 0) return const Text('0');
-                          if (value == 5) return const Text('5M');
+                          if (value == 0) {
+                            return GlobalText.regular(
+                              '0',
+                              color: AppColors.textLight.withOpacity(0.7),
+                              fontSize: 12.sp,
+                            );
+                          }
+                          if (value % 5 == 0 && value > 0) {
+                            return GlobalText.regular(
+                              '${value.toInt()}M',
+                              color: AppColors.textLight.withOpacity(0.7),
+                              fontSize: 12.sp,
+                            );
+                          }
                           return const SizedBox();
                         },
+                        reservedSize: 32.w,
                       ),
                     ),
-                    topTitles: AxisTitles(
+                    topTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
-                    rightTitles: AxisTitles(
+                    rightTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false),
                     ),
                   ),
-                  gridData: FlGridData(show: false),
+                  gridData: const FlGridData(show: false),
                   borderData: FlBorderData(show: false),
                 ),
               ),
@@ -183,47 +223,76 @@ final List<Map<String, dynamic>> transactions = [
 
             SizedBox(height: 24.h),
 
-            // Summary
+
             _buildSummaryRow(
               "Total Pemasukan",
               formatCurrency(totalIncome),
-              Colors.green,
+              AppColors.success,
             ),
             _buildSummaryRow(
               "Total Pengeluaran",
               formatCurrency(totalExpense),
-              Colors.red,
+              AppColors.danger,
             ),
 
-            SizedBox(height: 16.h),
+            SizedBox(height: 24.h),
             GlobalText.semiBold(
               'Transaksi',
-              fontSize: 16.sp,
-              color: Colors.black,
+              fontSize: 18.sp,
+              color: AppColors.textLight,
             ),
-
+            SizedBox(height: 8.h),
             Expanded(
               child: ListView.separated(
+                padding: EdgeInsets.zero,
                 itemCount: transactions.length,
-                separatorBuilder: (context, index) => Divider(),
+                separatorBuilder:
+                    (context, index) => Divider(
+                      color: AppColors.textLight.withOpacity(0.15),
+                      height: 1,
+                    ),
                 itemBuilder: (context, index) {
                   final item = transactions[index];
-                  return ListTile(
-                    leading: Icon(
-                      item['isIncome']
-                          ? Icons.trending_up
-                          : Icons.shopping_cart,
-                      color: item['isIncome'] ? Colors.green : Colors.red,
-                    ),
-                    title: Text(item['category']),
-                    subtitle: Text(item['date']),
-                    trailing: Text(
-                      (item['isIncome'] ? '+ ' : '- ') +
-                          formatCurrency(item['amount']),
-                      style: TextStyle(
-                        color: item['isIncome'] ? Colors.green : Colors.red,
-                        fontWeight: FontWeight.bold,
-                      ),
+                  final bool isIncome = item['isIncome'];
+                  final Color itemColor =
+                      isIncome ? AppColors.success : AppColors.danger;
+
+                  // GANTI DARI LISTTILE KE ROW UNTUK RATA KIRI
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(
+                          isIncome ? Icons.trending_up : Icons.trending_down,
+                          color: itemColor,
+                          size: 22.sp,
+                        ),
+                        SizedBox(width: 16.w),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            GlobalText.regular(
+                              item['category'],
+                              color: AppColors.textLight,
+                              fontSize: 14.sp,
+                            ),
+                            SizedBox(height: 4.h),
+                            GlobalText.regular(
+                              item['date'],
+                              color: AppColors.textLight.withOpacity(0.7),
+                              fontSize: 12.sp,
+                            ),
+                          ],
+                        ),
+                        const Spacer(),
+                        GlobalText.semiBold(
+                          (isIncome ? '+ ' : '- ') +
+                              formatCurrency(item['amount']),
+                          color: itemColor,
+                          fontSize: 14.sp,
+                        ),
+                      ],
                     ),
                   );
                 },
@@ -237,11 +306,11 @@ final List<Map<String, dynamic>> transactions = [
 
   Widget _buildSummaryRow(String label, String value, Color valueColor) {
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.h),
+      padding: EdgeInsets.symmetric(vertical: 6.h),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          GlobalText.medium(label, fontSize: 16.sp),
+          GlobalText.medium(label, fontSize: 16.sp, color: AppColors.textLight),
           GlobalText.semiBold(value, color: valueColor, fontSize: 16.sp),
         ],
       ),
