@@ -167,7 +167,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       HomeMenuButton(
                         icon: Icons.pie_chart_outline_rounded,
                         label: 'Analitics',
-                        onTap: () => Get.toNamed(NavigationRoutes.chatBot),
+                        onTap: () => Get.toNamed(NavigationRoutes.analytics),
                       ), // Asumsi analytics ada di chatbot
                       HomeMenuButton(
                         icon: Icons.show_chart_rounded,
