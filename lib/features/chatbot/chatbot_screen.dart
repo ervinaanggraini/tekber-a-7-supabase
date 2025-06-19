@@ -6,8 +6,10 @@ import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:moneyvesto/core/constants/color.dart'; // Pastikan path ini benar
-import 'package:moneyvesto/core/global_components/global_text.dart'; // Pastikan path ini benar
+import 'package:moneyvesto/core/constants/color.dart';
+import 'package:moneyvesto/core/global_components/global_text.dart';
+// TAMBAHKAN IMPORT INI untuk mengakses data source transaksi Anda
+import 'package:moneyvesto/data/transaction_datasource.dart';
 
 const String API_BASE_URL = 'http://45.13.132.219:6677';
 
@@ -26,7 +28,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   File? _selectedImageFile;
 
   String? _selectedTone;
-  String? _selectedPersonalityImagePath; // State untuk path gambar kepribadian
+  String? _selectedPersonalityImagePath;
 
   final Map<String, String> _toneDisplayNames = {
     'supportive_cheerleader': 'Penyemangat Baik Hati',
@@ -58,6 +60,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }
 
   Future<void> _showPersonalitySelectionDialog() async {
+    print("[DEBUG] Menampilkan dialog pemilihan kepribadian.");
     await showDialog(
       context: context,
       barrierDismissible: false,
@@ -76,7 +79,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           ),
           content: SingleChildScrollView(
             child: Wrap(
-              // MENGGUNAKAN WRAP UNTUK MENGHINDARI OVERFLOW
               alignment: WrapAlignment.center,
               spacing: 16.w,
               runSpacing: 16.h,
@@ -104,15 +106,15 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
   }) {
     return GestureDetector(
       onTap: () {
+        print("[DEBUG] Kepribadian dipilih: $displayName ($toneKey)");
         Navigator.of(context).pop();
         setState(() {
           _selectedTone = toneKey;
-          _selectedPersonalityImagePath = imagePath; // SIMPAN PATH GAMBAR
-          _messages.add({
-            'role': 'bot',
-            'text':
-                'Halo! Aku Vesto, asisten keuangan dengan gaya "$displayName". Siap membantu mencatat keuanganmu!',
-          });
+          _selectedPersonalityImagePath = imagePath;
+          final initialMessage =
+              'Halo! Aku Vesto, asisten keuangan dengan gaya "$displayName". Siap membantu mencatat keuanganmu!';
+          _messages.add({'role': 'bot', 'text': initialMessage});
+          print("[DEBUG] Pesan pembuka bot ditambahkan.");
         });
       },
       child: Column(
@@ -141,6 +143,22 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     );
   }
 
+  // TAMBAHKAN FUNGSI HELPER INI
+  bool _textContainsTransactionIndicators(String text) {
+    // Regex ini akan mencari beberapa pola:
+    // - Angka diikuti "k", "rb", atau "ribu" (misal: 50k, 100rb, 20 ribu)
+    // - "rp" diikuti oleh angka (misal: rp50000, rp 50.000)
+    // - Angka yang terdiri dari 4 digit atau lebih (misal: 5000, 15000, 100000)
+    final RegExp moneyPattern = RegExp(
+      r'(\d+[\.,]?\d*)\s*(k|rb|ribu)|(rp\s*\d+[\.,]?\d*)|\b\d{4,}\b',
+      caseSensitive: false,
+    );
+
+    final bool hasMatch = moneyPattern.hasMatch(text);
+    print("[ROUTING] Pengecekan teks: '$text'. Ditemukan pola uang: $hasMatch");
+    return hasMatch;
+  }
+
   void _scrollToBottom() {
     if (_scrollController.hasClients) {
       Future.delayed(const Duration(milliseconds: 100), () {
@@ -165,12 +183,16 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       );
 
       if (pickedFile != null && mounted) {
+        print("[DEBUG] Gambar dipilih dari ${source.name}: ${pickedFile.path}");
         setState(() {
           _selectedImageFile = File(pickedFile.path);
         });
+      } else {
+        print("[DEBUG] Pemilihan gambar dibatalkan.");
       }
-    } catch (e) {
-      print("Error picking image: $e");
+    } catch (e, s) {
+      print("[ERROR] Gagal memilih gambar: $e");
+      print("[ERROR] Stack Trace: $s");
       if (mounted) {
         Get.snackbar(
           'Error',
@@ -223,6 +245,49 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     );
   }
 
+  // TAMBAHKAN FUNGSI BARU INI
+  Future<void> _sendTextToTransactionEndpoint(String text) async {
+    print("[API] Teks mengandung uang, merutekan ke /transaction (multipart).");
+
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$API_BASE_URL/transaction'),
+    );
+
+    request.fields['message'] = text;
+    request.fields['tone_type'] = _selectedTone!;
+
+    try {
+      var streamedResponse = await request.send();
+      var response = await http.Response.fromStream(streamedResponse);
+
+      print("[API] /transaction (text-only) | Status: ${response.statusCode}");
+
+      if (response.statusCode == 200) {
+        final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
+        await _processBotResponse(decodedResponse);
+      } else {
+        final errorBody =
+            response.body.isNotEmpty
+                ? utf8.decode(response.bodyBytes)
+                : "No error details";
+        _addBotResponse(
+          'Gagal memproses transaksi dari teks (Status: ${response.statusCode}).',
+        );
+        print("[API] Error Body: $errorBody");
+      }
+    } catch (e, s) {
+      print(
+        "[API] GAGAL: Exception saat memanggil /transaction (text-only).\nError: $e\nStack Trace: $s",
+      );
+      _addBotResponse(
+        'Terjadi error saat mengirim data transaksi dari teks: $e',
+      );
+    }
+  }
+
+
+  // GANTI FUNGSI _sendMessage LAMA DENGAN VERSI BARU INI
   Future<void> _sendMessage() async {
     final String text = _controller.text.trim();
     final File? imageFile = _selectedImageFile;
@@ -232,6 +297,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       _showPersonalitySelectionDialog();
       return;
     }
+
+    print(
+      "[ROUTING] Memulai _sendMessage. Teks: '$text', Ada Gambar: ${imageFile != null}",
+    );
 
     Map<String, dynamic> userMessageMap = {
       'role': 'user',
@@ -250,13 +319,31 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     _controller.clear();
 
     try {
+      // --- LOGIKA PERUTEAN CERDAS DIMULAI DI SINI ---
       if (imageFile != null) {
+        // Prioritas 1: Jika ada gambar, selalu gunakan endpoint transaksi gambar.
+        print(
+          "[ROUTING] Keputusan: Ada gambar. Menggunakan _sendTransactionMessage.",
+        );
         await _sendTransactionMessage(imageFile, text);
+      } else if (_textContainsTransactionIndicators(text)) {
+        // Prioritas 2: Tidak ada gambar, TAPI teks mengandung nominal uang.
+        print(
+          "[ROUTING] Keputusan: Tidak ada gambar, teks mengandung uang. Menggunakan _sendTextToTransactionEndpoint.",
+        );
+        await _sendTextToTransactionEndpoint(text);
       } else {
+        // Prioritas 3: Teks chat biasa.
+        print(
+          "[ROUTING] Keputusan: Teks biasa. Menggunakan _sendTextMessage (ke /chat).",
+        );
         await _sendTextMessage(text, userMessageMap);
       }
+      // --- AKHIR DARI LOGIKA PERUTEAN ---
     } catch (e, s) {
-      print('Error sending message: $e\n$s');
+      print(
+        "[ERROR] Exception tidak tertangani di _sendMessage: $e\nStack Trace: $s",
+      );
       if (mounted) {
         _addBotResponse(
           'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.',
@@ -270,40 +357,53 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     }
   }
 
+  // GANTI FUNGSI LAMA DENGAN VERSI SIMPLE INI
   Future<void> _sendTextMessage(
     String text,
     Map<String, dynamic> userMessageMap,
   ) async {
+    print("[API] Memulai pengiriman pesan teks ke /chat.");
     List<String> previousChatHistory =
         _messages
             .where((msg) => msg['text'] is String && msg != userMessageMap)
-            .map((msg) => msg['text'] as String)
+            .map((msg) => "${msg['role']}: ${msg['text'] as String}")
             .toList();
 
-    final response = await http.post(
-      Uri.parse('$API_BASE_URL/chat'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'message': text,
-        'previous_chats': previousChatHistory,
-      }),
-    );
+    try {
+      final response = await http.post(
+        Uri.parse('$API_BASE_URL/chat'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'message': text,
+          'previous_chats': previousChatHistory,
+        }),
+      );
+      print("[API] /chat | Respons diterima. Status: ${response.statusCode}");
 
-    if (response.statusCode == 200) {
-      final decodedResponse = jsonDecode(response.body);
-      _addBotResponse(
-        decodedResponse['response'] ?? 'Maaf, saya tidak mengerti responsnya.',
+      if (response.statusCode == 200) {
+        final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
+        // SERAHKAN KE FUNGSI PEMROSES TERPUSAT
+        await _processBotResponse(decodedResponse);
+      } else {
+        final errorBody =
+            response.body.isNotEmpty
+                ? utf8.decode(response.bodyBytes)
+                : "No error details";
+        _addBotResponse(
+          'Maaf, terjadi kesalahan saat mencoba merespons (Status: ${response.statusCode}).',
+        );
+      }
+    } catch (e, s) {
+      print(
+        "[API] GAGAL: Exception saat memanggil /chat.\nError: $e\nStack Trace: $s",
       );
-    } else {
-      final errorBody =
-          response.body.isNotEmpty ? response.body : "No error details";
-      _addBotResponse(
-        'Maaf, terjadi kesalahan (Status: ${response.statusCode} - $errorBody).',
-      );
+      _addBotResponse('Terjadi error saat terhubung ke server chat: $e');
     }
   }
 
+  // GANTI FUNGSI LAMA DENGAN VERSI SIMPLE INI
   Future<void> _sendTransactionMessage(File imageFile, String text) async {
+    print("[API] Memulai pengiriman pesan dengan gambar ke /transaction.");
     var request = http.MultipartRequest(
       'POST',
       Uri.parse('$API_BASE_URL/transaction'),
@@ -319,14 +419,14 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     try {
       var streamedResponse = await request.send();
       var response = await http.Response.fromStream(streamedResponse);
+      print(
+        "[API] /transaction | Respons diterima. Status: ${response.statusCode}",
+      );
 
       if (response.statusCode == 200) {
         final decodedResponse = jsonDecode(utf8.decode(response.bodyBytes));
-        final Map<String, dynamic>? responses = decodedResponse['responses'];
-        final String personalityResponse =
-            responses?[_selectedTone] ??
-            "Gagal mendapatkan respons dari server.";
-        _addBotResponse(personalityResponse);
+        // SERAHKAN KE FUNGSI PEMROSES TERPUSAT
+        await _processBotResponse(decodedResponse);
       } else {
         final errorBody =
             response.body.isNotEmpty
@@ -336,7 +436,10 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
           'Gagal memproses gambar (Status: ${response.statusCode} - $errorBody).',
         );
       }
-    } catch (e) {
+    } catch (e, s) {
+      print(
+        "[API] GAGAL: Exception saat memanggil /transaction.\nError: $e\nStack Trace: $s",
+      );
       _addBotResponse('Terjadi error saat mengirim data: $e');
     }
   }
@@ -347,32 +450,80 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
         .replaceAll(RegExp(r'^\s*(\d+\.|-)\s+', multiLine: true), '');
   }
 
+  // TAMBAHKAN FUNGSI BARU INI
+  Future<void> _processBotResponse(Map<String, dynamic> decodedResponse) async {
+    print("[PROCESS_RESPONSE] Memulai pemrosesan respons bot.");
+    print("[PROCESS_RESPONSE] Data JSON: $decodedResponse");
+
+    // 1. Tampilkan respons teks ke pengguna
+    // Logika ini menangani DUA kemungkinan format respons:
+    // - Dari /transaction, respons ada di dalam objek 'responses'
+    // - Dari /chat, respons ada di kunci 'response'
+    String botReply = "Maaf, terjadi kesalahan dalam memahami respons.";
+    if (decodedResponse.containsKey('responses') &&
+        decodedResponse['responses'] is Map) {
+      final Map<String, dynamic> responses = decodedResponse['responses'];
+      botReply =
+          responses[_selectedTone] ?? "Gagal mendapatkan respons sesuai gaya.";
+    } else if (decodedResponse.containsKey('response')) {
+      botReply = decodedResponse['response'];
+    }
+    _addBotResponse(botReply);
+    print("[PROCESS_RESPONSE] Teks balasan bot ditampilkan: '$botReply'");
+
+    // 2. SELALU periksa dan simpan data transaksi jika ada
+    final List<dynamic>? transactionsData = decodedResponse['transactions'];
+
+    if (transactionsData != null && transactionsData.isNotEmpty) {
+      print("[PROCESS_RESPONSE] Data transaksi terdeteksi!");
+      final List<Map<String, dynamic>> transactionList =
+          transactionsData.cast<Map<String, dynamic>>();
+
+      print("[DB_SAVE] Payload yang akan dikirim: $transactionList");
+
+      try {
+        final TransactionDataSource transactionDataSource =
+            TransactionDataSourceImpl();
+        print("[DB_SAVE] Memanggil transactionDataSource.createTransaction...");
+        await transactionDataSource.createTransaction(transactionList);
+        print("[DB_SAVE] SUKSES: Transaksi berhasil disimpan ke database!");
+        _addBotResponse(
+          "Catatan transaksinya juga sudah berhasil disimpan ya!",
+        );
+      } catch (e, s) {
+        print("[DB_SAVE] GAGAL: Gagal menyimpan transaksi ke database.");
+        print("[ERROR] Detail Error: $e\nStack Trace: $s");
+        _addBotResponse(
+          'Aku berhasil mendeteksi transaksi, tapi gagal menyimpannya secara otomatis. Coba lagi atau tambah manual ya.',
+        );
+      }
+    } else {
+      print(
+        "[PROCESS_RESPONSE] Info: Tidak ada data transaksi ('transactions') yang ditemukan pada respons ini.",
+      );
+    }
+  }
+
+  // GANTI FUNGSI LAMA DENGAN VERSI YANG LEBIH SEDERHANA INI
   void _addBotResponse(String text) {
+    // Guard untuk memastikan widget masih ada di tree
     if (!mounted) return;
 
+    print("[UI] Menambahkan respons bot instan ke chat.");
+
+    // Tetap bersihkan teks dari format markdown jika ada
     final String cleanedText = _cleanMarkdown(text);
+
+    // Langsung perbarui state dengan pesan lengkap dari bot
     setState(() {
       _isBotTyping = false;
-      _messages.add({'role': 'bot', 'text': ''});
+      _messages.add({'role': 'bot', 'text': cleanedText});
     });
+
+    // Scroll ke bawah setelah pesan baru ditambahkan
     _scrollToBottom();
-    int charIndex = 0;
-    Timer.periodic(const Duration(milliseconds: 40), (timer) {
-      if (mounted) {
-        if (charIndex < cleanedText.length) {
-          setState(() {
-            _messages.last['text'] =
-                _messages.last['text']! + cleanedText[charIndex];
-            _scrollToBottom();
-          });
-          charIndex++;
-        } else {
-          timer.cancel();
-        }
-      } else {
-        timer.cancel();
-      }
-    });
+
+    print("[UI] Pesan bot ditambahkan: '$cleanedText'");
   }
 
   Widget _buildMessageItem(Map<String, dynamic> message, int index) {
@@ -438,6 +589,8 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
     );
   }
 
+  // SISA KODE (WIDGET BUILD) TIDAK PERLU DIUBAH
+  // Salin dan tempel sisa kode Anda dari sini
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -462,7 +615,6 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
       ),
       body: Column(
         children: [
-          // MENAMPILKAN GAMBAR VESTO SETELAH DIPILIH
           if (_selectedPersonalityImagePath != null)
             Padding(
               padding: EdgeInsets.only(top: 8.h, bottom: 8.h),

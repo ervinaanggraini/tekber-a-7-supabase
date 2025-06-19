@@ -43,7 +43,7 @@ class TransactionDataSourceImpl implements TransactionDataSource {
   Future<Response> getTransactions({
     int page = 1,
     int size = 100,
-    String order = 'asc',
+    String order = 'desc',
   }) async {
 
     // Mendapatkan user_id dari SharedPreferences
