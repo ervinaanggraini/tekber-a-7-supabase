@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:intl/intl.dart'; // Added for date formatting
+import 'package:intl/intl.dart';
+import 'dart:math';
+
+// --- SESUAIKAN PATH IMPOR INI ---
 import 'package:moneyvesto/core/constants/color.dart';
 import 'package:moneyvesto/core/global_components/global_text.dart';
-import 'dart:math'; // Added for max value calculation
+import 'package:moneyvesto/data/transaction_datasource.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -16,102 +19,18 @@ class AnalyticsScreen extends StatefulWidget {
 class _AnalyticsScreenState extends State<AnalyticsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  final TransactionDataSource _transactionDataSource =
+      TransactionDataSourceImpl();
 
-  // Data dummy untuk transaksi di bulan Juni 2025
-  // This is the master list of all transactions
-  final List<Map<String, dynamic>> _allTransactions = [
-    {
-      'category': 'Gaji',
-      'amount': 7500000,
-      'isIncome': true,
-      'date': DateTime(2025, 6, 1),
-    },
-    {
-      'category': 'Makan',
-      'amount': 75000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 2),
-    },
-    {
-      'category': 'Transportasi',
-      'amount': 50000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 2),
-    },
-    {
-      'category': 'Belanja',
-      'amount': 350000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 3),
-    },
-    {
-      'category': 'Freelance',
-      'amount': 1500000,
-      'isIncome': true,
-      'date': DateTime(2025, 6, 5),
-    },
-    {
-      'category': 'Makan',
-      'amount': 120000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 5),
-    },
-    {
-      'category': 'Hiburan',
-      'amount': 250000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 7),
-    },
-    {
-      'category': 'Transportasi',
-      'amount': 60000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 8),
-    },
-    {
-      'category': 'Makan',
-      'amount': 80000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 9),
-    },
-    {
-      'category': 'Tagihan',
-      'amount': 850000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 10),
-    },
-    {
-      'category': 'Kesehatan',
-      'amount': 175000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 11),
-    },
-    {
-      'category': 'Makan',
-      'amount': 95000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 12),
-    },
-    // Added data for "This Week" demonstration (assuming today is June 18, 2025)
-    {
-      'category': 'Makan',
-      'amount': 110000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 16),
-    },
-    {
-      'category': 'Proyek Sampingan',
-      'amount': 2500000,
-      'isIncome': true,
-      'date': DateTime(2025, 6, 17),
-    },
-    {
-      'category': 'Transportasi',
-      'amount': 45000,
-      'isIncome': false,
-      'date': DateTime(2025, 6, 18),
-    },
-  ];
+  // Daftar ini sekarang akan diisi dari API
+  List<Map<String, dynamic>> _allTransactions = [];
+
+  // State variables
+  bool _isLoading = true;
+  late List<Map<String, dynamic>> _filteredTransactions;
+  double _totalIncome = 0.0;
+  double _totalExpense = 0.0;
+  String _cashFlowChartTitle = '';
 
   // Palet warna untuk chart
   final List<Color> _chartColors = [
@@ -124,49 +43,82 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     Colors.blueAccent,
   ];
 
-  // State variables that will be updated based on the selected tab
-  late List<Map<String, dynamic>> _filteredTransactions;
-  double _totalIncome = 0.0;
-  double _totalExpense = 0.0;
-  String _cashFlowChartTitle = '';
-
   @override
   void initState() {
     super.initState();
     _filteredTransactions = [];
-    _tabController = TabController(length: 3, vsync: this);
-    // Add a listener to the TabController to update data when the tab changes
+    _tabController = TabController(
+      length: 3,
+      vsync: this,
+      initialIndex: 1,
+    ); // Default ke "Bulan Ini"
     _tabController.addListener(_handleTabSelection);
-    // Set the initial filter for the default tab (Bulan Ini)
-    _filterData(1); // 0: Week, 1: Month, 2: Year
+    _loadAndProcessData(); // Memuat data saat screen pertama kali dibuka
+  }
+
+  Future<void> _loadAndProcessData() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Ambil data dalam jumlah besar untuk mencakup filter tahunan
+      final response = await _transactionDataSource.getTransactions(size: 1000);
+
+      if (response.statusCode == 200 && response.data['data'] != null) {
+        List<dynamic> fetchedTransactions = response.data['data'];
+        final inputFormat = DateFormat('E, d MMM yyyy HH:mm:ss z', 'en_US');
+
+        // Transformasi data API ke format yang dibutuhkan UI
+        _allTransactions =
+            fetchedTransactions.map((trx) {
+              return {
+                'category': trx['description'],
+                'amount': (trx['total_price'] as num).toDouble(),
+                'isIncome': trx['transaction_type'] == 'deposit',
+                'date': inputFormat.parse(trx['created_at']),
+              };
+            }).toList();
+
+        // Setelah data dimuat, terapkan filter awal
+        _filterData(_tabController.index);
+      }
+    } catch (e) {
+      print("Failed to load analytics data: $e");
+      // Anda bisa menampilkan pesan error di sini jika perlu
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   void _handleTabSelection() {
-    if (_tabController.indexIsChanging) {
-      // Avoid running filter logic twice for an animation
-    } else {
+    if (!_tabController.indexIsChanging) {
       _filterData(_tabController.index);
     }
   }
 
   void _filterData(int tabIndex) {
-    final now = DateTime(
-      2025,
-      6,
-      18,
-    ); // Using a fixed 'now' for consistent demo
+    // ---- MENGGUNAKAN WAKTU SEBENARNYA (DINAMIS) ----
+    final now = DateTime.now();
+    // Untuk demo, jika ingin tanggal tetap, gunakan:
+    // final now = DateTime(2025, 6, 19);
+    // ----------------------------------------------------
+
     DateTime startDate;
-    DateTime endDate = now;
+    // Tentukan endDate sebagai akhir hari ini agar data hari ini masuk
+    DateTime endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
 
     switch (tabIndex) {
-      case 0: // Minggu Ini
+      case 0: // Minggu Ini (Senin hingga hari ini)
         startDate = now.subtract(Duration(days: now.weekday - 1));
         _cashFlowChartTitle = 'Tren Arus Kas (Minggu Ini)';
         break;
       case 1: // Bulan Ini
         startDate = DateTime(now.year, now.month, 1);
         _cashFlowChartTitle =
-            'Tren Arus Kas (${DateFormat('MMMM yyyy').format(now)})';
+            'Tren Arus Kas (${DateFormat('MMMM yyyy', 'id_ID').format(now)})';
         break;
       case 2: // Tahun Ini
         startDate = DateTime(now.year, 1, 1);
@@ -176,12 +128,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         startDate = DateTime(now.year, now.month, 1);
     }
 
+    // Set startDate ke awal hari
+    startDate = DateTime(startDate.year, startDate.month, startDate.day);
+
     setState(() {
       _filteredTransactions =
           _allTransactions.where((t) {
             final date = t['date'] as DateTime;
-            return date.isAfter(startDate.subtract(const Duration(days: 1))) &&
-                date.isBefore(endDate.add(const Duration(days: 1)));
+            // Cek apakah tanggal berada di antara startDate (inklusif) dan endDate (inklusif)
+            return !date.isBefore(startDate) && !date.isAfter(endDate);
           }).toList();
 
       _totalIncome = _filteredTransactions
@@ -228,7 +183,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         ),
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: AppColors.textLight,
+          indicatorColor: AppColors.primaryAccent,
           labelColor: AppColors.primaryAccent,
           unselectedLabelColor: AppColors.textLight.withOpacity(0.6),
           tabs: [
@@ -238,29 +193,37 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
           ],
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.all(16.w),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 16.h),
-              _buildSummaryCard(_totalIncome, _totalExpense),
-              SizedBox(height: 28.h),
-              // Only build charts if there is data to prevent errors
-              if (_filteredTransactions.isNotEmpty) ...[
-                _buildExpenseBreakdownCard(),
-                SizedBox(height: 28.h),
-                _buildCashFlowTrendCard(),
-                SizedBox(height: 20.h),
-              ] else
-                _buildEmptyState(),
-            ],
-          ),
-        ),
-      ),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.all(16.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(height: 16.h),
+                      _buildSummaryCard(_totalIncome, _totalExpense),
+                      SizedBox(height: 28.h),
+                      if (_filteredTransactions.isNotEmpty) ...[
+                        // Hanya build chart jika ada pengeluaran
+                        if (_totalExpense > 0) ...[
+                          _buildExpenseBreakdownCard(),
+                          SizedBox(height: 28.h),
+                        ],
+                        _buildCashFlowTrendCard(),
+                        SizedBox(height: 20.h),
+                      ] else
+                        _buildEmptyState(),
+                    ],
+                  ),
+                ),
+              ),
     );
   }
+
+  // --- SEMUA WIDGET PEMBANTU (BUILD HELPER) DI BAWAH INI TIDAK PERLU DIUBAH ---
+  // --- KARENA MEREKA SUDAH MEMBACA DARI STATE YANG DINAMIS ---
 
   Widget _buildEmptyState() {
     return Center(
@@ -325,9 +288,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       );
     });
 
-    // FIXED: Handle case where there are no expenses to avoid division by zero
     if (_totalExpense == 0) {
-      return Container(); // Or a widget saying "No expenses"
+      return Container();
     }
 
     return Container(
@@ -416,7 +378,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
   }
 
   Widget _buildCashFlowTrendCard() {
-    // FIXED: Aggregate data by day to handle multiple transactions on the same day.
     Map<int, double> dailyIncome = {};
     Map<int, double> dailyExpense = {};
 
@@ -447,11 +408,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             .map((e) => FlSpot(e.key.toDouble(), e.value))
             .toList();
 
-    // Sort spots by day to ensure the line is drawn correctly
     incomeSpots.sort((a, b) => a.x.compareTo(b.x));
     expenseSpots.sort((a, b) => a.x.compareTo(b.x));
 
-    // FIXED: Dynamically calculate max values for the chart axes
     final maxIncome = dailyIncome.values.fold(
       0.0,
       (prev, element) => max(prev, element),
@@ -460,15 +419,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
       0.0,
       (prev, element) => max(prev, element),
     );
-    final maxY = max(maxIncome, maxExpense) * 1.2; // Add 20% padding
+    final maxY = max(maxIncome, maxExpense) * 1.2;
 
-    final now = DateTime(2025, 6, 18);
-    final maxX =
-        DateTime(
-          now.year,
-          now.month + 1,
-          0,
-        ).day.toDouble(); // Days in current month
+    final now = DateTime.now();
+    final maxX = DateTime(now.year, now.month + 1, 0).day.toDouble();
 
     return Container(
       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 10.h),
@@ -480,7 +434,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           GlobalText.semiBold(
-            _cashFlowChartTitle, // FIXED: Dynamic chart title
+            _cashFlowChartTitle,
             fontSize: 16.sp,
             color: AppColors.textLight,
           ),
@@ -513,8 +467,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                     sideTitles: SideTitles(
                       showTitles: true,
                       reservedSize: 30.h,
-                      interval:
-                          5, // Keep interval simple, can be made more dynamic
+                      interval: 5,
                       getTitlesWidget:
                           (value, meta) => Text(
                             value.toInt().toString(),
@@ -528,9 +481,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
                 ),
                 borderData: FlBorderData(show: false),
                 minX: 1,
-                maxX: maxX, // FIXED: Dynamic max X
+                maxX: maxX,
                 minY: 0,
-                maxY: maxY, // FIXED: Dynamic max Y
+                maxY: maxY > 0 ? maxY : 100000, // Handle case where maxY is 0
                 lineBarsData: [
                   _buildLineChartBarData(incomeSpots, true),
                   _buildLineChartBarData(expenseSpots, false),

@@ -36,7 +36,7 @@ class NavigationRoutes {
     GetPage(name: signUp, page: () => const SignUpScreen()),
     GetPage(name: forgotPassword, page: () => const ForgotPasswordScreen()),
     GetPage(name: home, page: () => const HomeScreen(),),
-    GetPage(name: profile, page: () => const ProfileScreen()),
+    GetPage(name: profile, page: () => ProfileScreen()),
     GetPage(name: financeReport, page: () => const FinanceReportScreen()),
     GetPage(name: chatBot, page: () => const ChatbotScreen()),
     GetPage(name: invest, page: () => const EducationAndSimulationScreen()),

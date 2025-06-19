@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:moneyvesto/core/constants/color.dart'; // <-- IMPORT AppColors
+import 'package:get/get.dart'; // Import GetX jika akan menggunakan Get.back() atau Get.snackbar()
+import 'package:moneyvesto/core/constants/color.dart';
 import 'package:moneyvesto/core/global_components/base_widget_container.dart';
 import 'package:moneyvesto/core/global_components/global_button.dart';
 import 'package:moneyvesto/core/global_components/global_text.dart';
@@ -44,36 +45,41 @@ class ForgotPasswordScreen extends StatelessWidget {
                 controller: emailController,
                 hintText: 'Email',
                 keyboardType: TextInputType.emailAddress,
-                // Catatan: GlobalTextField mungkin memerlukan pembaruan internal
-                // untuk menyesuaikan dengan tema gelap jika belum diatur
               ),
               SizedBox(height: 30.h),
               GlobalButton(
                 text: 'Send Reset Link',
                 backgroundColor:
                     AppColors
-                        .primaryAccent, // Tombol utama menggunakan aksen primer
+                        .primaryAccent,
                 textColor: AppColors.textLight,
                 onPressed: () {
-                  // Tambahkan logika untuk mengirim email reset password
-                  // Misalnya, panggil fungsi dari controller/service Anda
-                  // Get.snackbar('Info', 'Password reset link sent to ${emailController.text}');
+                  Get.snackbar(
+                    'Fitur Dalam Pengembangan',
+                    'Logika untuk kirim email reset belum diimplementasikan.',
+                    snackPosition: SnackPosition.TOP,
+                    backgroundColor: Colors.green.withOpacity(0.8),
+                    colorText: Colors.white,
+                  );
                 },
                 width: 1.sw, // Lebar penuh
                 fontSize: 14.sp,
+                height: 48.h,
               ),
-              // Anda bisa menambahkan tombol "Kembali ke Login" jika dirasa perlu
-              // SizedBox(height: 20.h),
-              // TextButton(
-              //   onPressed: () {
-              //     Get.back(); // Kembali ke halaman sebelumnya (LoginScreen)
-              //   },
-              //   child: GlobalText.regular(
-              //     'Back to Sign In',
-              //     fontSize: 12.sp,
-              //     color: AppColors.primaryAccent,
-              //   ),
-              // ),
+              const Spacer(), // Mendorong tombol kembali ke bawah
+              Center(
+                child: TextButton(
+                  onPressed: () {
+                    Get.back(); // Kembali ke halaman sebelumnya (LoginScreen)
+                  },
+                  child: GlobalText.regular(
+                    'Back to Sign In',
+                    fontSize: 12.sp,
+                    color: AppColors.primaryAccent,
+                  ),
+                ),
+              ),
+              SizedBox(height: 20.h),
             ],
           ),
         ),
