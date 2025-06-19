@@ -4,14 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:flutter_expandable_fab/flutter_expandable_fab.dart'; // DIKEMBALIKAN
+import 'package:flutter_expandable_fab/flutter_expandable_fab.dart';
 import 'package:moneyvesto/core/constants/color.dart';
 import 'package:moneyvesto/core/global_components/base_widget_container.dart';
 import 'package:moneyvesto/core/global_components/global_text.dart';
 import 'package:moneyvesto/core/utils/route_utils.dart';
 import 'package:moneyvesto/features/home/controller/home_controller.dart';
+import 'package:moneyvesto/features/home/widgets/add_transactions.dart';
 import 'package:moneyvesto/features/home/widgets/finance_summary_card.dart';
 import 'package:moneyvesto/features/home/widgets/home_menu_button.dart';
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -25,7 +27,8 @@ class HomeScreen extends StatelessWidget {
       child: BaseWidgetContainer(
         backgroundColor: AppColors.background,
         floatingActionButtonLocation: ExpandableFab.location,
-        floatingActionButton: _buildExpandableFab(controller),
+        // --- PERUBAHAN 2: Kirim 'context' ke dalam method build FAB ---
+        floatingActionButton: _buildExpandableFab(context, controller),
         body: Obx(
           () =>
               controller.isLoading.value
@@ -83,8 +86,8 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
-  // WIDGET UNTUK FAB DIKEMBALIKAN
-  Widget _buildExpandableFab(HomeController controller) {
+  // --- PERUBAHAN 3: Method ini sekarang menerima 'BuildContext' ---
+  Widget _buildExpandableFab(BuildContext context, HomeController controller) {
     return ExpandableFab(
       key: controller.fabKey,
       distance: 80,
@@ -109,46 +112,65 @@ class HomeScreen extends StatelessWidget {
         shape: const CircleBorder(),
       ),
       children: [
-        // --- Tombol Pengeluaran (Fungsi dinonaktifkan sementara) ---
+        // --- Tombol Pengeluaran ---
         FloatingActionButton.small(
           heroTag: "expense",
           backgroundColor: AppColors.danger,
           child: const Icon(Icons.arrow_downward_rounded),
-          onPressed: () {
-            Get.snackbar(
-              'Segera Hadir',
-              'Fitur tambah pengeluaran sedang dalam pengembangan.',
-              snackPosition: SnackPosition.BOTTOM,
+          // --- PERUBAHAN 4: Ganti onPressed untuk memanggil dialog ---
+          onPressed: () async {
+            // Tutup menu FAB secara programatik untuk UX yang lebih baik
+            controller.fabKey.currentState?.toggle();
+
+            // Panggil fungsi dialog untuk pengeluaran
+            final bool success = await showAndProcessAddTransactionDialog(
+              context,
+              initialType: TransactionType.withdrawal,
             );
+
+            // Jika transaksi berhasil ditambahkan, refresh data di home
+            if (success) {
+              controller.fetchAllData();
+            }
           },
         ),
-        // --- Tombol ChatBot ---
+        // --- Tombol ChatBot (TETAP SAMA) ---
         FloatingActionButton.small(
           heroTag: "chatBot",
           backgroundColor: AppColors.primaryAccent,
           child: const Icon(Icons.smart_toy_outlined),
           onPressed: controller.navigateToChatBot,
         ),
-        // --- Tombol Pemasukan (Fungsi dinonaktifkan sementara) ---
+        // --- Tombol Pemasukan ---
         FloatingActionButton.small(
           heroTag: "income",
           backgroundColor: AppColors.success,
           child: const Icon(Icons.arrow_upward_rounded),
-          onPressed: () {
-            Get.snackbar(
-              'Segera Hadir',
-              'Fitur tambah pemasukan sedang dalam pengembangan.',
-              snackPosition: SnackPosition.BOTTOM,
+          // --- PERUBAHAN 5: Ganti onPressed untuk memanggil dialog ---
+          onPressed: () async {
+            // Tutup menu FAB secara programatik
+            controller.fabKey.currentState?.toggle();
+
+            // Panggil fungsi dialog untuk pemasukan
+            final bool success = await showAndProcessAddTransactionDialog(
+              context,
+              initialType: TransactionType.deposit,
             );
+
+            // Jika transaksi berhasil ditambahkan, refresh data di home
+            if (success) {
+              controller.fetchAllData();
+            }
           },
         ),
       ],
     );
   }
 
-  // --- Widget lain tetap sama ---
+  // --- Widget lain di bawah ini tidak perlu diubah ---
 
   Widget _buildUserHeader(HomeController controller) {
+    // ... (kode tidak berubah)
     final user = controller.user.value;
     final profileImageUrl = user['profile_image_url'] as String?;
 
@@ -194,6 +216,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildFinanceSummary(HomeController controller) {
+    // ... (kode tidak berubah)
     return FinanceSummaryCard(
       pengeluaran: controller.totalExpenses.value.toInt(),
       pemasukan: controller.totalDeposits.value.toInt(),
@@ -203,6 +226,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildMainMenu(HomeController controller) {
+    // ... (kode tidak berubah)
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
@@ -234,6 +258,7 @@ class HomeScreen extends StatelessWidget {
     required String title,
     required VoidCallback onTap,
   }) {
+    // ... (kode tidak berubah)
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -251,6 +276,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildRecentTransactionsList(HomeController controller) {
+    // ... (kode tidak berubah)
     return controller.recentTransactions.isEmpty
         ? Container(
           height: 100.h,
@@ -325,6 +351,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildLatestNewsCard(HomeController controller) {
+    // ... (kode tidak berubah)
     return GestureDetector(
       onTap: () => controller.navigateTo(NavigationRoutes.news),
       child: Container(

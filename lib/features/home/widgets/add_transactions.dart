@@ -1,18 +1,13 @@
-// file: add_transaction_dialog.dart (atau nama file UI dialog Anda)
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:intl/intl.dart';
-import 'package:dio/dio.dart'; // <-- Tambahkan impor untuk DioException
-
-// Impor yang dibutuhkan dari proyek Anda
+import 'package:dio/dio.dart';
 import 'package:moneyvesto/core/constants/color.dart';
 import 'package:moneyvesto/data/transaction_datasource.dart';
 
 enum TransactionType { deposit, withdrawal }
 
-// --- Model TransactionItem (TETAP SAMA, TIDAK ADA PERUBAHAN) ---
 class TransactionItem {
   final TextEditingController descriptionController;
   final TextEditingController priceController;
@@ -27,79 +22,87 @@ class TransactionItem {
   }
 }
 
-// --- FUNGSI UTAMA BARU UNTUK MENAMPILKAN DAN MEMPROSES DIALOG ---
-// Nama fungsi diubah agar lebih deskriptif
-// Fungsi ini sekarang mengembalikan Future<bool> yang menandakan keberhasilan.
+// UBAH: Fungsi ini sekarang menangani List<Map<String, dynamic>>
 Future<bool> showAndProcessAddTransactionDialog(
   BuildContext context, {
   TransactionType initialType = TransactionType.withdrawal,
 }) async {
-  // 1. Buat instance dari TransactionDataSource di sini
   final TransactionDataSource transactionDataSource =
       TransactionDataSourceImpl();
 
-  // 2. Tampilkan dialog dan tunggu hasilnya (data transaksi atau null)
-  final Map<String, dynamic>? transactionData =
-      await showDialog<Map<String, dynamic>?>(
+  // UBAH: Tipe data yang diharapkan dari dialog adalah List<Map<String, dynamic>>
+  final List<Map<String, dynamic>>? transactionDataList =
+      await showDialog<List<Map<String, dynamic>>?>(
         context: context,
         barrierDismissible: false,
         builder: (BuildContext context) {
-          // Dialog widget internal tidak diubah
           return _AddTransactionDialog(initialType: initialType);
         },
       );
 
-  // Pastikan widget masih ada di tree (best practice untuk async-await)
   if (!context.mounted) return false;
 
-  // 3. Proses hasil dari dialog
-  if (transactionData != null) {
-    // Tampilkan loading indicator jika diperlukan (misal dengan dialog lain)
-    // atau biarkan user menunggu sebentar.
+  print('📤 Hasil dari dialog: $transactionDataList');
 
+  // UBAH: Periksa apakah list tidak null dan tidak kosong
+  if (transactionDataList != null && transactionDataList.isNotEmpty) {
     try {
-      // 4. Kirim data ke API menggunakan data source
-      await transactionDataSource.createTransaction(transactionData);
+      print('📡 Mengirim data ke API...');
+      print('📦 Payload: $transactionDataList');
 
-      // 5. Tampilkan notifikasi sukses
+      // UBAH: Kirim seluruh list ke data source
+      // CATATAN: Pastikan `createTransaction` di-update untuk menerima List
+      await transactionDataSource.createTransaction(transactionDataList);
+
+      print('✅ Transaksi berhasil dikirim!');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Transaksi berhasil ditambahkan!'),
           backgroundColor: AppColors.success,
         ),
       );
-      return true; // Kembalikan true jika sukses
+      return true;
     } on DioException catch (e) {
-      // Tangani error spesifik dari Dio/API
+      print('❌ DioException terjadi');
+      print('📨 Pesan: ${e.message}');
+      print('📡 Status: ${e.response?.statusCode}');
+      print('📦 Response: ${e.response?.data}');
+
+      String errorMessage = 'Koneksi bermasalah';
+      if (e.response?.data != null &&
+          e.response!.data is Map<String, dynamic>) {
+        errorMessage =
+            e.response!.data['message'] ?? 'Terjadi kesalahan pada server.';
+      } else if (e.response?.statusCode == 308) {
+        errorMessage =
+            'Kesalahan konfigurasi: Mohon hubungi developer (Error 308).';
+      } else if (e.response?.data is String &&
+          (e.response!.data as String).isNotEmpty) {
+        errorMessage = 'Gagal memproses. Server merespon dengan kesalahan.';
+      }
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Gagal: ${e.response?.data['message'] ?? 'Koneksi bermasalah'}',
-          ),
+          content: Text('Gagal: $errorMessage'),
           backgroundColor: AppColors.danger,
         ),
       );
-      return false; // Kembalikan false jika gagal
+      return false;
     } catch (e) {
-      // Tangani error umum lainnya
+      print('🛑 Exception tidak diketahui: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Terjadi kesalahan tidak terduga: $e'),
           backgroundColor: AppColors.danger,
         ),
       );
-      return false; // Kembalikan false jika gagal
+      return false;
     }
   } else {
-    // Pengguna menekan "Batal" atau menutup dialog
-    print("Penambahan transaksi dibatalkan oleh pengguna.");
-    return false; // Kembalikan false karena tidak ada transaksi yang dibuat
+    print("⚠️ Transaksi dibatalkan oleh pengguna atau kosong.");
+    return false;
   }
 }
-
-// --- WIDGET DIALOG (_AddTransactionDialog) ---
-// Bagian ini sebagian besar tetap sama.
-// Perubahan hanya pada fungsi _submitForm untuk HANYA mengembalikan data.
 
 class _AddTransactionDialog extends StatefulWidget {
   final TransactionType initialType;
@@ -144,45 +147,43 @@ class _AddTransactionDialogState extends State<_AddTransactionDialog> {
     }
   }
 
-  // FUNGSI SUBMIT FORM SEKARANG HANYA MENGEMBALIKAN DATA, TIDAK LEBIH
+  // UBAH: Logika utama pembuatan payload diubah di sini
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       final transactionTypeString =
           _selectedType == TransactionType.deposit ? 'deposit' : 'withdrawal';
 
-      final List<Map<String, dynamic>> itemsData =
+      // Buat List<Map> sesuai format yang diminta
+      final List<Map<String, dynamic>> payload =
           _items.map((item) {
+            final double price =
+                double.tryParse(
+                  item.priceController.text.replaceAll('.', ''),
+                ) ??
+                0.0;
+
+            // Setiap item menjadi objek transaksi terpisah
             return {
               "description": item.descriptionController.text,
-              "price":
-                  double.tryParse(
-                    item.priceController.text.replaceAll('.', ''),
-                  ) ??
-                  0,
+              "transaction_type": transactionTypeString,
+              "amount": 1, // Sesuai format baru
+              "total_price": price, // Gunakan 'total_price' bukan 'price'
             };
           }).toList();
 
-      final double totalPrice = itemsData.fold(
-        0,
-        (sum, item) => sum + (item['price'] as double),
-      );
-
-      final result = {
-        "transaction_type": transactionTypeString,
-        "items": itemsData,
-        "total_price": totalPrice,
-      };
-
-      // Kembalikan map 'result' ke pemanggil showDialog (yaitu fungsi showAndProcessAddTransactionDialog)
-      Navigator.of(context).pop(result);
+      print('📥 Form valid. Data transaksi akan dikirim: $payload');
+      // Kirim seluruh list sebagai hasil dari dialog
+      Navigator.of(context).pop(payload);
+    } else {
+      print('⚠️ Form tidak valid!');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // --- UI TIDAK ADA PERUBAHAN ---
-    // (Kode build widget Anda yang sudah ada diletakkan di sini,
-    // tidak perlu diubah sama sekali)
+    // ... (Sisa dari widget build tidak perlu diubah) ...
+    // Kode widget build Anda dari sini ke bawah sudah benar.
+    // Cukup salin bagian yang telah diubah di atas.
     final activeColor =
         _selectedType == TransactionType.deposit
             ? AppColors.success
@@ -275,8 +276,7 @@ class _AddTransactionDialogState extends State<_AddTransactionDialog> {
   }
 
   Widget _buildItemInput(int index) {
-    // --- UI TIDAK ADA PERUBAHAN ---
-    // (Kode build item input Anda yang sudah ada diletakkan di sini)
+    // ... (Metode ini tidak perlu diubah) ...
     final item = _items[index];
     final bool canRemove = _items.length > 1;
 
@@ -361,7 +361,6 @@ class _AddTransactionDialogState extends State<_AddTransactionDialog> {
   }
 }
 
-// Class Formatter Mata Uang (TETAP SAMA, TIDAK ADA PERUBAHAN)
 class _CurrencyInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(

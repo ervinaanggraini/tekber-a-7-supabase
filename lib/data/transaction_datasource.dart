@@ -6,7 +6,7 @@ import 'package:moneyvesto/core/utils/shared_preferences_utils.dart';
 
 // Abstract class (Interface)
 abstract class TransactionDataSource {
-  Future<Response> createTransaction(Map<String, dynamic> data);
+  Future<Response> createTransaction(List<Map<String, dynamic>> dataList);
   Future<Response> getTransactions({int page, int size, String order});
   Future<Response> getTransactionById(String id);
   Future<Response> updateTransaction(String id, Map<String, dynamic> data);
@@ -33,8 +33,10 @@ class TransactionDataSourceImpl implements TransactionDataSource {
   }
 
   @override
-  Future<Response> createTransaction(Map<String, dynamic> data) async {
-    return await _dio.post('/transactions', data: data);
+  Future<Response> createTransaction(
+    List<Map<String, dynamic>> dataList,
+  ) async {
+    return await _dio.post('/transactions/', data: dataList);
   }
 
   @override

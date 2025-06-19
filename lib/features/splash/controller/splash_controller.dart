@@ -1,50 +1,38 @@
-// file: lib/modules/splash/splash_controller.dart
-
 import 'dart:async';
 import 'package:get/get.dart';
 import 'package:moneyvesto/core/utils/route_utils.dart';
-import 'package:moneyvesto/data/auth_datasource.dart';
+import 'package:moneyvesto/core/utils/shared_preferences_utils.dart';
 
 class SplashController extends GetxController {
-  final AuthDataSource _authDataSource = AuthDataSourceImpl();
+  final SharedPreferencesUtils _prefs = SharedPreferencesUtils();
 
   @override
   void onInit() {
     super.onInit();
-    // Durasi minimal splash screen ditampilkan, sesuai dengan kode Anda
     Timer(const Duration(seconds: 3), _decideRoute);
   }
 
-  /// Memutuskan rute selanjutnya berdasarkan status onboarding dan login
   void _decideRoute() async {
-    final bool hasSeenOnboarding = await _authDataSource.hasSeenOnboarding();
+    await _prefs.init(); // Pastikan shared prefs sudah siap
+
+    final bool hasSeenOnboarding = _prefs.hasSeenOnboarding;
 
     if (!hasSeenOnboarding) {
-      // Jika belum pernah lihat onboarding, arahkan ke sana
       Get.offNamed(NavigationRoutes.onboarding);
+      _prefs.setOnboardingAsSeen(); // Tandai onboarding sudah dilihat
     } else {
-      // Jika sudah, cek status login
       _checkLoginStatus();
     }
   }
 
-  /// Memeriksa apakah token login masih valid
-  Future<void> _checkLoginStatus() async {
-    final bool userIsLoggedIn = await _authDataSource.isLoggedIn();
+  void _checkLoginStatus() {
+    final bool isLoggedIn = _prefs.isLoggedIn;
+    final String? token = _prefs.token;
 
-    if (userIsLoggedIn) {
-      try {
-        // Validasi token dengan memanggil data pengguna
-        await _authDataSource.getCurrentUser();
-        // Jika berhasil, token valid, arahkan ke home
-        Get.offAllNamed(NavigationRoutes.home);
-      } catch (e) {
-        // Jika gagal (token expired), logout dan arahkan ke login
-        await _authDataSource.logout();
-        Get.offAllNamed(NavigationRoutes.login);
-      }
+    if (isLoggedIn && token != null && token.isNotEmpty) {
+      // Dianggap login jika status true dan token tersedia
+      Get.offAllNamed(NavigationRoutes.home);
     } else {
-      // Jika belum login, arahkan ke login
       Get.offAllNamed(NavigationRoutes.login);
     }
   }
