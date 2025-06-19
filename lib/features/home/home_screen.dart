@@ -163,7 +163,7 @@ class HomeScreen extends StatelessWidget {
               color: AppColors.textLight.withOpacity(0.8),
             ),
             GlobalText.medium(
-              user['name'] ?? 'Guest',
+              user['username'] ?? 'Guest',
               fontSize: 20.sp,
               color: AppColors.textLight,
             ),

@@ -1,6 +1,5 @@
 // lib/features/home/controllers/home_controller.dart
 
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -62,9 +61,10 @@ class HomeController extends GetxController {
   }
 
   Future<void> _fetchUserData() async {
-    final userDataString = await _prefsUtils.getData('currentUser');
-    if (userDataString != null) {
-      user.value = jsonDecode(userDataString as String);
+    final userData = _prefsUtils.getData('currentUser');
+    print('User data: $userData');
+    if (userData != null) {
+      user.value = userData; // simpan seluruh objek
     }
   }
 

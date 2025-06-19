@@ -53,6 +53,11 @@ class SharedPreferencesUtils {
         : null;
   }
 
+   String? getUserId() {
+    final userData = getData('currentUser');
+    return userData != null ? userData['id'] as String? : null;
+  }
+
   // Metode untuk menghapus data spesifik
   Future<void> clearData(String key) async {
     await _prefs.remove(key);

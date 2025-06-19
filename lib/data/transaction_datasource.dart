@@ -2,6 +2,7 @@
 
 import 'package:dio/dio.dart';
 import 'package:moneyvesto/core/services/DioService.dart';
+import 'package:moneyvesto/core/utils/shared_preferences_utils.dart';
 
 // Abstract class (Interface)
 abstract class TransactionDataSource {
@@ -10,11 +11,26 @@ abstract class TransactionDataSource {
   Future<Response> getTransactionById(String id);
   Future<Response> updateTransaction(String id, Map<String, dynamic> data);
   Future<Response> deleteTransaction(String id);
+
+  // Tambahkan deklarasi fungsi baru di abstract class
   Future<Map<String, double>> calculateExpensesAndDeposits();
 }
 
 class TransactionDataSourceImpl implements TransactionDataSource {
   final Dio _dio = DioService().dio;
+
+  final SharedPreferencesUtils _prefsUtils = SharedPreferencesUtils();
+
+  String _getUserId() {
+    final userData = _prefsUtils.getData('currentUser');
+    if (userData != null && userData['id'] != null) {
+      print('User ID: ${userData['id']}');
+      return userData['id'].toString();
+      
+    } else {
+      throw Exception('User not authenticated. Unable to get user ID.');
+    }
+  }
 
   @override
   Future<Response> createTransaction(Map<String, dynamic> data) async {
@@ -27,10 +43,16 @@ class TransactionDataSourceImpl implements TransactionDataSource {
     int size = 100,
     String order = 'asc',
   }) async {
+
+    // Mendapatkan user_id dari SharedPreferences
+    String userId = await _getUserId();
+
     return await _dio.get(
       '/transactions',
-      queryParameters: {'page': page, 'size': size, 'order': order},
+      queryParameters: {'page': page, 'size': size, 'order': order, 'user_id': userId},
     );
+
+    // ambil yang response.data['user_id'] sama seperti user_id yang login
   }
 
   @override

@@ -61,6 +61,7 @@ class DioService {
           // Fungsi ini dijalankan saat response diterima
           onResponse: (response, handler) {
             print('<-- ${response.statusCode} ${response.requestOptions.path}');
+            print('Response data: ${response.data}');
             return handler.next(response);
           },
 

@@ -6,6 +6,7 @@ import 'package:moneyvesto/core/global_components/global_button.dart';
 import 'package:moneyvesto/core/global_components/global_text.dart';
 import 'package:moneyvesto/core/global_components/global_text_fields.dart';
 import 'package:moneyvesto/core/utils/route_utils.dart';
+import 'package:moneyvesto/core/utils/shared_preferences_utils.dart';
 import 'package:moneyvesto/data/auth_datasource.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -18,6 +19,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   // Instance dari data source untuk interaksi data
   final AuthDataSource _authDataSource = AuthDataSourceImpl();
+  final SharedPreferencesUtils _prefsUtils = SharedPreferencesUtils();
 
   // State untuk menyimpan data pengguna dan status UI
   Map<String, dynamic>? _userData;
@@ -148,6 +150,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       await _authDataSource.logout();
+      _prefsUtils.clearAll(); 
       // Navigasi ke halaman login dan hapus semua halaman sebelumnya dari stack
       // Pastikan Anda punya definisi rute bernama 'login'
       Get.offAllNamed(NavigationRoutes.login);
