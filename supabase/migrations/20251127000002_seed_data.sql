@@ -8,31 +8,31 @@
 
 -- Income Categories
 INSERT INTO public.categories (id, name, type, icon, color, is_system) VALUES
-(uuid_generate_v4(), 'Gaji', 'income', '💰', '#4CAF50', TRUE),
-(uuid_generate_v4(), 'Bonus', 'income', '🎁', '#8BC34A', TRUE),
-(uuid_generate_v4(), 'Investasi', 'income', '📈', '#009688', TRUE),
-(uuid_generate_v4(), 'Freelance', 'income', '💼', '#00BCD4', TRUE),
-(uuid_generate_v4(), 'Bisnis', 'income', '🏢', '#03A9F4', TRUE),
-(uuid_generate_v4(), 'Hadiah', 'income', '🎉', '#2196F3', TRUE),
-(uuid_generate_v4(), 'Lainnya', 'income', '➕', '#607D8B', TRUE);
+(gen_random_uuid(), 'Gaji', 'income', '💰', '#4CAF50', TRUE),
+(gen_random_uuid(), 'Bonus', 'income', '🎁', '#8BC34A', TRUE),
+(gen_random_uuid(), 'Investasi', 'income', '📈', '#009688', TRUE),
+(gen_random_uuid(), 'Freelance', 'income', '💼', '#00BCD4', TRUE),
+(gen_random_uuid(), 'Bisnis', 'income', '🏢', '#03A9F4', TRUE),
+(gen_random_uuid(), 'Hadiah', 'income', '🎉', '#2196F3', TRUE),
+(gen_random_uuid(), 'Lainnya', 'income', '➕', '#607D8B', TRUE);
 
 -- Expense Categories
 INSERT INTO public.categories (id, name, type, icon, color, is_system) VALUES
-(uuid_generate_v4(), 'Makanan & Minuman', 'expense', '🍔', '#FF5722', TRUE),
-(uuid_generate_v4(), 'Transportasi', 'expense', '🚗', '#FF9800', TRUE),
-(uuid_generate_v4(), 'Belanja', 'expense', '🛒', '#FFC107', TRUE),
-(uuid_generate_v4(), 'Tagihan', 'expense', '📄', '#F44336', TRUE),
-(uuid_generate_v4(), 'Hiburan', 'expense', '🎮', '#E91E63', TRUE),
-(uuid_generate_v4(), 'Kesehatan', 'expense', '🏥', '#9C27B0', TRUE),
-(uuid_generate_v4(), 'Pendidikan', 'expense', '📚', '#673AB7', TRUE),
-(uuid_generate_v4(), 'Investasi', 'expense', '💎', '#3F51B5', TRUE),
-(uuid_generate_v4(), 'Cicilan', 'expense', '💳', '#D32F2F', TRUE),
-(uuid_generate_v4(), 'Asuransi', 'expense', '🛡️', '#795548', TRUE),
-(uuid_generate_v4(), 'Donasi', 'expense', '❤️', '#E91E63', TRUE),
-(uuid_generate_v4(), 'Kecantikan', 'expense', '💄', '#EC407A', TRUE),
-(uuid_generate_v4(), 'Olahraga', 'expense', '⚽', '#66BB6A', TRUE),
-(uuid_generate_v4(), 'Hadiah', 'expense', '🎁', '#AB47BC', TRUE),
-(uuid_generate_v4(), 'Lainnya', 'expense', '❓', '#607D8B', TRUE);
+(gen_random_uuid(), 'Makanan & Minuman', 'expense', '🍔', '#FF5722', TRUE),
+(gen_random_uuid(), 'Transportasi', 'expense', '🚗', '#FF9800', TRUE),
+(gen_random_uuid(), 'Belanja', 'expense', '🛒', '#FFC107', TRUE),
+(gen_random_uuid(), 'Tagihan', 'expense', '📄', '#F44336', TRUE),
+(gen_random_uuid(), 'Hiburan', 'expense', '🎮', '#E91E63', TRUE),
+(gen_random_uuid(), 'Kesehatan', 'expense', '🏥', '#9C27B0', TRUE),
+(gen_random_uuid(), 'Pendidikan', 'expense', '📚', '#673AB7', TRUE),
+(gen_random_uuid(), 'Investasi', 'expense', '💎', '#3F51B5', TRUE),
+(gen_random_uuid(), 'Cicilan', 'expense', '💳', '#D32F2F', TRUE),
+(gen_random_uuid(), 'Asuransi', 'expense', '🛡️', '#795548', TRUE),
+(gen_random_uuid(), 'Donasi', 'expense', '❤️', '#E91E63', TRUE),
+(gen_random_uuid(), 'Kecantikan', 'expense', '💄', '#EC407A', TRUE),
+(gen_random_uuid(), 'Olahraga', 'expense', '⚽', '#66BB6A', TRUE),
+(gen_random_uuid(), 'Hadiah', 'expense', '🎁', '#AB47BC', TRUE),
+(gen_random_uuid(), 'Lainnya', 'expense', '❓', '#607D8B', TRUE);
 
 -- ============================================
 -- 2. BADGES (ACHIEVEMENTS)
