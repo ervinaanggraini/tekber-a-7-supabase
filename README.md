@@ -1,51 +1,186 @@
-# Flutter & Supabase Mobile App Starter Template
+# MoneyWise - Aplikasi Manajemen Keuangan
 
-Welcome to the Flutter and Supabase Mobile App Starter Template! This template provides a solid foundation for building cross-platform mobile applications using Flutter and Supabase. This template will save you 24+ hours of development work. You can quickly kickstart your mobile app development process, focusing on creating amazing user experiences without worrying about setting up authentication flows from scratch.
+MoneyWise adalah aplikasi mobile manajemen keuangan pribadi yang dibangun dengan Flutter dan Supabase. Aplikasi ini membantu Anda melacak pemasukan, pengeluaran, dan mengelola keuangan dengan mudah.
 
-## Available features
+## Fitur Utama
 
-* Clean architecture with the feature-first-project structure where features are separated into 3 modules: data, domain, and presentation.
-* State management with BLoC/Cubit
-* Dependency injection using GetIt and Injectable
-* Navigation with GoRouter
-* Dark mode
-* Hive as a local database
-* Supabase integration
-* Authentication flow using login with a magic link
-* Change email address
-* Settings page with Privacy Policy and Terms of Service links
-* Flutter Native Splash Screen
-* Flutter Launcher Icons
-* Google Fonts
+* 🎨 **UI Modern** dengan dukungan Dark/Light Mode
+* 🔐 **Autentikasi** menggunakan Supabase Auth (Email/Password)
+* 💰 **Cashflow Monitoring** - Track pemasukan dan pengeluaran
+* 📊 **Dashboard** dengan visualisasi cashflow
+* 👤 **Profile Management** dengan settings terintegrasi
+* ⚡ **Skeleton Loading** untuk UX yang lebih baik
+* 🏗️ **Clean Architecture** dengan separation of concerns
+* 🔄 **State Management** menggunakan BLoC/Cubit
+* 🎯 **Dependency Injection** dengan GetIt dan Injectable
 
-## Setup 
+## Tech Stack
 
-### Supabase 
+- **Framework**: Flutter
+- **Backend**: Supabase (PostgreSQL)
+- **State Management**: flutter_bloc
+- **Navigation**: go_router
+- **DI**: get_it + injectable
+- **Local Storage**: Hive
+- **Fonts**: Google Fonts (Poppins)
+- **Icons**: Font Awesome
 
-1. **Create Supabase Project**: Visit [Supabase](https://supabase.com/) and create a new project.
-2. **Enable Email Provider**: Navigate to the Authentication page in the Supabase dashboard. In the Configuration tab, enable the Email Provider. In our simple example, we disabled Secure Email Change. This is not our recommendation and we consider enabling it in production would be helpful.
-3. **Configure URL Callbacks**: In the URL Configuration section, add the Site URL and Redirect URLs for login and change email address callbacks. Replace **testproject** with the name of your Supabase project.
+## Prerequisites
 
+Sebelum menjalankan aplikasi, pastikan Anda sudah menginstal:
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Site URL:** 
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (versi terbaru)
+- [Dart SDK](https://dart.dev/get-dart) (biasanya sudah include dengan Flutter)
+- Android Studio / VS Code dengan Flutter extension
+- Device emulator atau physical device untuk testing
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; io.supabase.testproject
+## Cara Run Aplikasi
 
+### 1. Clone Repository
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; **Redirect URLs:**
+```bash
+git clone https://github.com/ervinaanggraini/tekber-a-7-supabase.git
+cd tekber-a-7-supabase/flutter_application
+```
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; io.supabase.testproject://login-callback/
- 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;  io.supabase.testproject://change-email/
+### 2. Install Dependencies
 
+```bash
+flutter pub get
+```
 
-### Flutter
+### 3. Setup Supabase
 
-1. Run **flutter pub get**
-2. Add Supabase Project URL and Public Anon Key:
-    * In your main.dart file, locate the **_initializeSupabase()** method.
-    * Replace **PROJECT_URL** and **PUBLIC_ANON_KEY** with your Supabase project URL and public anon key respectively. You can find these in the API settings tab inside the Project Settings section on Supabase.
-3. Setup Deeplinking URLs:
-    * Edit the **ios/Runner/Info.plist** file: Update **CFBundleURLSchemes** to match your Site URL.
-    * Edit the **android/app/src/main/AndroidManifest.xml** file: Update intent-filter to match the scheme and host of your Site URL and Redirect URLs.
-    * Open **/lib/core/constants/urls.dart** and update **_baseSupabaseUrl** to match your Site URL.
+#### a. Buat Project Supabase
+1. Kunjungi [Supabase](https://supabase.com/) dan buat project baru
+2. Copy **Project URL** dan **API Key (anon public)** dari Settings > API
+
+#### b. Konfigurasi Environment Variables
+1. Copy file `.env.example` menjadi `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit file `.env` dan update dengan credentials Supabase Anda:
+   ```env
+   SUPABASE_URL=https://your-project.supabase.co
+   SUPABASE_ANON_KEY=your-anon-key-here
+   ```
+
+**⚠️ PENTING**: File `.env` sudah ada di `.gitignore`, jangan commit ke Git!
+
+#### c. Setup Database Schema
+Jalankan migration SQL di Supabase SQL Editor (`supabase/migrations/20251127000001_initial_schema.sql`):
+
+```sql
+-- Copy dan jalankan semua SQL di file migration
+```
+
+### 4. Generate Code (Dependency Injection)
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+### 5. Run Aplikasi
+
+#### Untuk Android:
+```bash
+flutter run
+```
+
+#### Untuk iOS:
+```bash
+flutter run -d ios
+```
+
+#### Untuk Web:
+```bash
+flutter run -d chrome
+```
+
+### 6. Hot Reload
+
+Setelah aplikasi running, Anda bisa menggunakan:
+- `r` untuk hot reload
+- `R` untuk hot restart
+- `q` untuk quit
+
+## Struktur Project
+
+```
+lib/
+├── core/                      # Core utilities & constants
+│   ├── app/                   # App theme & config
+│   ├── constants/             # Colors, spacings, URLs
+│   ├── router/                # Navigation setup
+│   └── widgets/               # Reusable widgets (skeleton, etc)
+├── features/                  # Feature modules
+│   ├── auth/                  # Authentication
+│   ├── home/                  # Home dashboard
+│   ├── profile/               # User profile & settings
+│   ├── transactions/          # Transaction management
+│   ├── theme_mode/            # Theme switching
+│   └── onboarding/            # Welcome screen
+└── dependency_injection.dart  # DI configuration
+```
+
+## Fitur yang Tersedia
+
+### ✅ Sudah Implementasi
+- [x] Authentication (Login/Register)
+- [x] Home Dashboard dengan Cashflow
+- [x] Profile Page dengan Settings
+- [x] Dark/Light Mode Toggle
+- [x] Skeleton Loading
+- [x] Backend Integration dengan Supabase
+
+### 🚧 Dalam Pengembangan
+- [ ] Add Transaction Feature
+- [ ] Transaction History
+- [ ] Budget Management
+- [ ] Analytics & Reports
+- [ ] Export Data
+
+## Troubleshooting
+
+### Build Runner Error
+Jika terjadi error saat generate code:
+```bash
+flutter clean
+flutter pub get
+dart run build_runner clean
+dart run build_runner build --delete-conflicting-outputs
+```
+
+### Supabase Connection Error
+- Pastikan URL dan API Key sudah benar
+- Cek koneksi internet
+- Pastikan Supabase project sudah running
+
+### Flutter Version Error
+Update Flutter ke versi terbaru:
+```bash
+flutter upgrade
+```
+
+## Kontribusi
+
+Silakan berkontribusi dengan cara:
+1. Fork repository ini
+2. Buat branch baru (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push ke branch (`git push origin feature/AmazingFeature`)
+5. Buat Pull Request
+
+## Tim Pengembang
+
+- **Ervina Anggraini** - Developer
+
+## Credits
+
+Project ini dibangun menggunakan boilerplate dari [Flutter & Supabase Mobile App Starter Template](https://github.com/mhadaily/flutter_supabase_starter) oleh [Majid Hajian](https://github.com/mhadaily)
+
+## Lisensi
+
+Project ini dibuat untuk keperluan akademik.
