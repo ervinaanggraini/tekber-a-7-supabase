@@ -12,14 +12,14 @@ class BottomNavigationBarState extends Equatable {
       label: "Home",
       icon: Icons.home,
       tooltip: "Home",
-      content: WelcomeContent(),
+      content: HomeContent(),
     ),
-    const TabItem(
-      label: "Settings",
-      icon: Icons.settings,
-      tooltip: "Settings",
-      content: SettingsPage(),
-    ),
+    // const TabItem(
+    //   label: "Settings",
+    //   icon: Icons.settings,
+    //   tooltip: "Settings",
+    //   content: SettingsPage(),
+    // ),
   ];
 
   BottomNavigationBarState copyWith({int? selectedIndex}) {

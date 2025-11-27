@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_application/core/constants/app_colors.dart';
 import 'package:flutter_application/core/constants/spacings.dart';
+import 'package:flutter_application/core/router/routes.dart';
 import 'package:flutter_application/features/auth/presentation/bloc/register/register_cubit.dart';
 import 'package:flutter_application/features/auth/presentation/widget/register_button.dart';
 import 'package:flutter_application/features/auth/presentation/widget/register_name_input.dart';
@@ -29,18 +30,18 @@ class RegisterForm extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                  onPressed: () => context.pop(),
+                  onPressed: () => context.go(Routes.onboarding.path),
                 ),
               ),
             ),
             Expanded(
               child: Column(
                 children: [
-                  const SizedBox(height: Spacing.s16),
+                  const SizedBox(height: Spacing.s8),
                   Expanded(
                     child: Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(Spacing.s24),
+                      padding: const EdgeInsets.symmetric(horizontal: Spacing.s24, vertical: Spacing.s16),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: const BorderRadius.only(
@@ -55,83 +56,83 @@ class RegisterForm extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            // Title
-                            Text(
-                              "Daftar",
-                              style: GoogleFonts.poppins(
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.b93160,
-                              ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title
+                          Text(
+                            "Daftar",
+                            style: GoogleFonts.poppins(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.b93160,
                             ),
-                            const SizedBox(height: Spacing.s8),
-                            Text(
-                              "Daftar sekarang dan kendalikan setiap pengeluaran tanpa repot!",
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: Colors.black54,
-                              ),
+                          ),
+                          const SizedBox(height: Spacing.s4),
+                          Text(
+                            "Daftar sekarang dan kendalikan setiap pengeluaran tanpa repot!",
+                            style: GoogleFonts.poppins(
+                              fontSize: 13,
+                              color: Colors.black54,
                             ),
-                            const SizedBox(height: Spacing.s16),
-                            Container(
-                              width: MediaQuery.of(context).size.width / 3,
-                              height: 3,
-                              decoration: BoxDecoration(
-                                color: AppColors.b93160,
-                                borderRadius: BorderRadius.circular(2),
-                              ),
+                          ),
+                          const SizedBox(height: Spacing.s12),
+                          Container(
+                            width: MediaQuery.of(context).size.width / 3,
+                            height: 3,
+                            decoration: BoxDecoration(
+                              color: AppColors.b93160,
+                              borderRadius: BorderRadius.circular(2),
                             ),
-                            const SizedBox(height: Spacing.s24),
-                            // Name input
-                            const RegisterNameInput(),
-                            const SizedBox(height: Spacing.s16),
-                            // Email input
-                            const RegisterEmailInput(),
-                            const SizedBox(height: Spacing.s16),
-                            // Password input
-                            const RegisterPasswordInput(),
-                            const SizedBox(height: Spacing.s16),
-                            // Confirm Password input
-                            const RegisterConfirmPasswordInput(),
-                            const SizedBox(height: Spacing.s48),
-                            // Register button
-                            const RegisterButton(),
-                            const SizedBox(height: Spacing.s24),
-                            // Toggle to login
-                            Center(
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    "Sudah punya akun? ",
+                          ),
+                          const SizedBox(height: Spacing.s8),
+                          // Name input
+                          const RegisterNameInput(),
+                          const SizedBox(height: Spacing.s8),
+                          // Email input
+                          const RegisterEmailInput(),
+                          const SizedBox(height: Spacing.s8),
+                          // Password input
+                          const RegisterPasswordInput(),
+                          const SizedBox(height: Spacing.s8),
+                          // Confirm Password input
+                          const RegisterConfirmPasswordInput(),
+                          const Spacer(),
+                          // Register button
+                          const RegisterButton(),
+                          const SizedBox(height: Spacing.s8),
+                          // Toggle to login
+                          Center(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Sudah punya akun? ",
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.black54,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => context.go(Routes.login.path),
+                                  style: TextButton.styleFrom(
+                                    padding: EdgeInsets.zero,
+                                    minimumSize: const Size(0, 0),
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  ),
+                                  child: Text(
+                                    "Masuk",
                                     style: GoogleFonts.poppins(
-                                      color: Colors.black54,
+                                      color: Colors.blue,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
                                     ),
                                   ),
-                                  TextButton(
-                                    onPressed: () => context.pop(),
-                                    style: TextButton.styleFrom(
-                                      padding: EdgeInsets.zero,
-                                      minimumSize: const Size(0, 0),
-                                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    ),
-                                    child: Text(
-                                      "Masuk",
-                                      style: GoogleFonts.poppins(
-                                        color: Colors.blue,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

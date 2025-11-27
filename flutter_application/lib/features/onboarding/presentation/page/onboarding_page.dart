@@ -40,6 +40,7 @@ class _OnboardingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -75,7 +76,7 @@ class _OnboardingView extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: GoogleFonts.poppins(
                     fontSize: 16,
-                    color: Colors.black87,
+                    color: isDark ? Colors.white : Colors.black87,
                   ),
                 ),
                 const SizedBox(height: Spacing.s48),
@@ -139,25 +140,69 @@ class _OnboardingView extends StatelessWidget {
                     _SocialButton(
                       icon: FontAwesomeIcons.facebookF,
                       color: const Color(0xFF1877F2),
-                      onTap: () {},
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Fitur ini sedang dalam pengembangan',
+                              style: GoogleFonts.poppins(),
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(width: 16),
                     _SocialButton(
                       icon: FontAwesomeIcons.google,
                       color: const Color(0xFFDB4437),
-                      onTap: () {},
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Fitur ini sedang dalam pengembangan',
+                              style: GoogleFonts.poppins(),
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(width: 16),
                     _SocialButton(
                       icon: FontAwesomeIcons.apple,
                       color: Colors.black,
-                      onTap: () {},
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Fitur ini sedang dalam pengembangan',
+                              style: GoogleFonts.poppins(),
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
                     ),
                     const SizedBox(width: 16),
                     _SocialButton(
                       icon: FontAwesomeIcons.xTwitter,
                       color: Colors.black,
-                      onTap: () {},
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Fitur ini sedang dalam pengembangan',
+                              style: GoogleFonts.poppins(),
+                            ),
+                            behavior: SnackBarBehavior.floating,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -187,7 +232,7 @@ class _SocialButton extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(10),
+        padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.white,
@@ -202,7 +247,7 @@ class _SocialButton extends StatelessWidget {
         child: Icon(
           icon,
           color: color,
-          size: 24,
+          size: 18,
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_application/core/constants/app_colors.dart';
 import 'package:flutter_application/core/constants/spacings.dart';
+import 'package:flutter_application/core/router/routes.dart';
 import 'package:flutter_application/features/auth/presentation/bloc/login/login_cubit.dart';
 import 'package:flutter_application/features/auth/presentation/widget/login_button.dart';
 import 'package:flutter_application/features/auth/presentation/widget/login_email_input.dart';
@@ -27,7 +28,7 @@ class LoginForm extends StatelessWidget {
                 padding: const EdgeInsets.all(16.0),
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                  onPressed: () => context.pop(),
+                  onPressed: () => context.go(Routes.onboarding.path),
                 ),
               ),
             ),
@@ -132,7 +133,15 @@ class LoginForm extends StatelessWidget {
                                   ),
                                 ),
                                 TextButton(
-                                  onPressed: () => context.read<LoginCubit>().toggleLoginMode(),
+                                  onPressed: () {
+                                    if (state.isLoginMode) {
+                                      // Navigate to register page
+                                      context.push(Routes.register.path);
+                                    } else {
+                                      // Toggle back to login mode
+                                      context.read<LoginCubit>().toggleLoginMode();
+                                    }
+                                  },
                                   style: TextButton.styleFrom(
                                     padding: EdgeInsets.zero,
                                     minimumSize: const Size(0, 0),

@@ -47,4 +47,16 @@ class ThemeModeCubit extends Cubit<ThemeModeState> {
       ),
     );
   }
+
+  void changeTheme(ThemeMode mode) {
+    _setThemeModeUseCase.execute(SetThemeModeUseCaseParams(
+      themeModeIndex: mode.index,
+    ));
+
+    emit(
+      state.copyWith(
+        selectedThemeMode: mode,
+      ),
+    );
+  }
 }

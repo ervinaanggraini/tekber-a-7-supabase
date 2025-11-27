@@ -9,7 +9,6 @@ import 'package:flutter_application/features/auth/presentation/page/register_pag
 import 'package:flutter_application/features/onboarding/presentation/page/onboarding_page.dart';
 import 'package:flutter_application/features/splash/presentation/page/splash_page.dart';
 import '../../features/auth/presentation/page/login_page.dart';
-import '../../features/settings/presentation/page/settings_page.dart';
 
 final router = GoRouter(
   routes: [
@@ -40,11 +39,6 @@ final router = GoRouter(
       name: Routes.home.name,
       path: Routes.home.path,
       builder: (context, state) => const HomePage(),
-    ),
-    GoRoute(
-      name: Routes.settings.name,
-      path: Routes.settings.path,
-      builder: (context, state) => const SettingsPage(),
     ),
     GoRoute(
       name: Routes.changeEmailAddress.name,

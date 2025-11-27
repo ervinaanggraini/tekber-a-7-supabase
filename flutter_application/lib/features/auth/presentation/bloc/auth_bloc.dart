@@ -69,6 +69,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     Emitter<AuthState> emit,
   ) async {
     await _logoutUseCase.execute(NoParams());
+    emit(const AuthUserUnauthenticated());
   }
 
   @override

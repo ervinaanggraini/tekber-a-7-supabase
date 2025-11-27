@@ -34,6 +34,8 @@ import 'package:flutter_application/features/auth/presentation/bloc/register/reg
     as _i553;
 import 'package:flutter_application/features/home/presentation/bloc/bottom_navigation_bar/bottom_navigation_bar_cubit.dart'
     as _i740;
+import 'package:flutter_application/features/home/presentation/bloc/home/home_cubit.dart'
+    as _i436;
 import 'package:flutter_application/features/onboarding/data/repository/onboarding_repository.dart'
     as _i483;
 import 'package:flutter_application/features/onboarding/presentation/cubit/onboarding_cubit.dart'
@@ -48,6 +50,16 @@ import 'package:flutter_application/features/theme_mode/domain/use_case/set_them
     as _i727;
 import 'package:flutter_application/features/theme_mode/presentation/bloc/theme_mode_cubit.dart'
     as _i621;
+import 'package:flutter_application/features/transactions/data/data_sources/transaction_remote_data_source.dart'
+    as _i713;
+import 'package:flutter_application/features/transactions/data/repositories/transaction_repository_impl.dart'
+    as _i661;
+import 'package:flutter_application/features/transactions/domain/repositories/transaction_repository.dart'
+    as _i993;
+import 'package:flutter_application/features/transactions/domain/use_cases/get_cashflow_summary_use_case.dart'
+    as _i357;
+import 'package:flutter_application/features/transactions/domain/use_cases/get_recent_transactions_use_case.dart'
+    as _i725;
 import 'package:flutter_application/features/user/data/repository/supabase_user_repository.dart'
     as _i763;
 import 'package:flutter_application/features/user/domain/repository/user_repository.dart'
@@ -95,6 +107,9 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i177.OnboardingCubit>(
         () => _i177.OnboardingCubit(gh<_i483.OnboardingRepository>()));
+    gh.lazySingleton<_i713.TransactionRemoteDataSource>(() =>
+        _i713.TransactionRemoteDataSourceImpl(
+            supabaseClient: gh<_i454.SupabaseClient>()));
     gh.factory<_i946.AuthRepository>(
         () => _i476.SupabaseAuthRepository(gh<_i454.GoTrueClient>()));
     gh.factory<_i627.ChangeEmailAddressUseCase>(
@@ -111,14 +126,28 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i603.LogoutUseCase(gh<_i946.AuthRepository>()));
     gh.factory<_i829.SignUpWithEmailAndPasswordUseCase>(() =>
         _i829.SignUpWithEmailAndPasswordUseCase(gh<_i946.AuthRepository>()));
+    gh.lazySingleton<_i993.TransactionRepository>(() =>
+        _i661.TransactionRepositoryImpl(
+            remoteDataSource: gh<_i713.TransactionRemoteDataSource>()));
     gh.factory<_i723.LoginCubit>(() => _i723.LoginCubit(
           gh<_i459.LoginWithEmailAndPasswordUseCase>(),
           gh<_i829.SignUpWithEmailAndPasswordUseCase>(),
         ));
+    gh.factory<_i357.GetCashflowSummaryUseCase>(() =>
+        _i357.GetCashflowSummaryUseCase(
+            repository: gh<_i993.TransactionRepository>()));
+    gh.factory<_i725.GetRecentTransactionsUseCase>(() =>
+        _i725.GetRecentTransactionsUseCase(
+            repository: gh<_i993.TransactionRepository>()));
     gh.factory<_i553.RegisterCubit>(() =>
         _i553.RegisterCubit(gh<_i829.SignUpWithEmailAndPasswordUseCase>()));
     gh.factory<_i75.ChangeEmailAddressCubit>(() =>
         _i75.ChangeEmailAddressCubit(gh<_i627.ChangeEmailAddressUseCase>()));
+    gh.factory<_i436.HomeCubit>(() => _i436.HomeCubit(
+          getCashflowSummaryUseCase: gh<_i357.GetCashflowSummaryUseCase>(),
+          getRecentTransactionsUseCase:
+              gh<_i725.GetRecentTransactionsUseCase>(),
+        ));
     gh.factory<_i964.AuthBloc>(() => _i964.AuthBloc(
           gh<_i981.GetLoggedInUserUseCase>(),
           gh<_i781.GetCurrentAuthStateUseCase>(),
