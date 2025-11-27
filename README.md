@@ -1,6 +1,6 @@
-# MoneyWise - Aplikasi Manajemen Keuangan
+# Moneystock - Aplikasi Manajemen Keuangan
 
-MoneyWise adalah aplikasi mobile manajemen keuangan pribadi yang dibangun dengan Flutter dan Supabase. Aplikasi ini membantu Anda melacak pemasukan, pengeluaran, dan mengelola keuangan dengan mudah.
+Moneystock adalah aplikasi mobile manajemen keuangan pribadi yang dibangun dengan Flutter dan Supabase. Aplikasi ini membantu Anda melacak pemasukan, pengeluaran, dan mengelola keuangan dengan mudah.
 
 ## Fitur Utama
 
