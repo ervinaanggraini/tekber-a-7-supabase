@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_application/core/constants/app_colors.dart';
 import 'package:flutter_application/core/constants/spacings.dart';
+import 'package:flutter_application/core/router/routes.dart';
 import 'package:flutter_application/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:flutter_application/features/home/presentation/bloc/home/home_cubit.dart';
 import 'package:flutter_application/features/profile/presentation/page/profile_page.dart';
@@ -47,6 +49,14 @@ class _HomeContentView extends StatelessWidget {
       (Match m) => '${m[1]}.',
     );
     return 'Rp$formatted,-';
+  }
+
+  String _getMonthYearText(DateTime date) {
+    const monthNames = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    return '${monthNames[date.month - 1]} ${date.year}';
   }
 
   @override
@@ -173,24 +183,49 @@ class _HomeContentView extends StatelessWidget {
                               ),
                             ],
                           ),
-                          InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const ProfilePage(),
+                          Row(
+                            children: [
+                              // Chat Button
+                              InkWell(
+                                onTap: () {
+                                  context.pushNamed(Routes.chat.name);
+                                },
+                                borderRadius: BorderRadius.circular(24),
+                                child: Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: AppColors.linier,
+                                  ),
+                                  child: const Icon(
+                                    Icons.chat_bubble_rounded,
+                                    color: Colors.white,
+                                    size: 24,
+                                  ),
                                 ),
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(24),
-                            child: const CircleAvatar(
-                              radius: 24,
-                              backgroundColor: AppColors.b93160,
-                              child: Icon(
-                                Icons.person,
-                                color: Colors.white,
-                                size: 28,
                               ),
-                            ),
+                              const SizedBox(width: 12),
+                              // Profile Button
+                              InkWell(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => const ProfilePage(),
+                                    ),
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(24),
+                                child: const CircleAvatar(
+                                  radius: 24,
+                                  backgroundColor: AppColors.b93160,
+                                  child: Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -224,23 +259,74 @@ class _HomeContentView extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.b93160,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                "Cashflow",
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.white,
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.b93160,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    "Cashflow",
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                                // Month selector
+                                Row(
+                                  children: [
+                                    IconButton(
+                                      onPressed: () {
+                                        final currentMonth = state.selectedMonth;
+                                        final previousMonth = DateTime(
+                                          currentMonth.year,
+                                          currentMonth.month - 1,
+                                        );
+                                        context.read<HomeCubit>().changeMonth(previousMonth);
+                                      },
+                                      icon: const Icon(Icons.chevron_left),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      color: AppColors.b93160,
+                                    ),
+                                    Text(
+                                      _getMonthYearText(state.selectedMonth),
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.b93160,
+                                      ),
+                                    ),
+                                    IconButton(
+                                      onPressed: () {
+                                        final currentMonth = state.selectedMonth;
+                                        final now = DateTime.now();
+                                        // Prevent going to future months
+                                        if (currentMonth.year < now.year || 
+                                            (currentMonth.year == now.year && currentMonth.month < now.month)) {
+                                          final nextMonth = DateTime(
+                                            currentMonth.year,
+                                            currentMonth.month + 1,
+                                          );
+                                          context.read<HomeCubit>().changeMonth(nextMonth);
+                                        }
+                                      },
+                                      icon: const Icon(Icons.chevron_right),
+                                      padding: EdgeInsets.zero,
+                                      constraints: const BoxConstraints(),
+                                      color: AppColors.b93160,
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                             const SizedBox(height: Spacing.s16),
                             Text(

@@ -5,7 +5,7 @@ import 'package:flutter_application/features/transactions/data/models/category_m
 
 abstract class TransactionRemoteDataSource {
   Future<List<TransactionModel>> getRecentTransactions({int limit = 10});
-  Future<Map<String, double>> getCashflowData();
+  Future<Map<String, double>> getCashflowData({DateTime? month});
   Future<TransactionModel> createTransaction(TransactionModel transaction);
   Future<void> deleteTransaction(String transactionId);
   Future<List<CategoryModel>> getCategories({String? type});
@@ -42,41 +42,43 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
   }
 
   @override
-  Future<Map<String, double>> getCashflowData() async {
+  Future<Map<String, double>> getCashflowData({DateTime? month}) async {
     try {
       final userId = supabaseClient.auth.currentUser?.id;
       if (userId == null) {
         throw Exception('User not authenticated');
       }
 
-      // Get all transactions for current month
-      final now = DateTime.now();
-      final firstDayOfMonth = DateTime(now.year, now.month, 1);
-      final lastDayOfMonth = DateTime(now.year, now.month + 1, 0);
+      // Get selected month date range for monthly changes
+      final targetMonth = month ?? DateTime.now();
+      final firstDayOfMonth = DateTime(targetMonth.year, targetMonth.month, 1);
+      final lastDayOfMonth = DateTime(targetMonth.year, targetMonth.month + 1, 0);
 
-      final response = await supabaseClient
+      // Get this month's transactions only
+      final monthlyTransactions = await supabaseClient
           .from('transactions')
           .select('type, amount')
           .eq('user_id', userId)
           .gte('transaction_date', firstDayOfMonth.toIso8601String().split('T')[0])
           .lte('transaction_date', lastDayOfMonth.toIso8601String().split('T')[0]);
 
-      double totalIncome = 0;
-      double totalExpense = 0;
+      // Calculate monthly income, expense, and balance
+      double monthlyIncome = 0;
+      double monthlyExpense = 0;
 
-      for (var transaction in response as List) {
+      for (var transaction in monthlyTransactions as List) {
         final amount = (transaction['amount'] as num).toDouble();
         if (transaction['type'] == 'income') {
-          totalIncome += amount;
+          monthlyIncome += amount;
         } else {
-          totalExpense += amount;
+          monthlyExpense += amount;
         }
       }
 
       return {
-        'totalIncome': totalIncome,
-        'totalExpense': totalExpense,
-        'balance': totalIncome - totalExpense,
+        'totalIncome': monthlyIncome,
+        'totalExpense': monthlyExpense,
+        'balance': monthlyIncome - monthlyExpense, // Balance bulan ini saja
       };
     } catch (e) {
       throw Exception('Failed to fetch cashflow data: $e');

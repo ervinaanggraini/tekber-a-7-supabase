@@ -18,8 +18,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
-  Future<CashflowSummary> getCashflowSummary() async {
-    final data = await remoteDataSource.getCashflowData();
+  Future<CashflowSummary> getCashflowSummary({DateTime? month}) async {
+    final data = await remoteDataSource.getCashflowData(month: month);
     
     final totalIncome = data['totalIncome'] ?? 0;
     final totalExpense = data['totalExpense'] ?? 0;

@@ -12,13 +12,15 @@ class GetCashflowSummaryUseCase extends UseCase<Future<CashflowSummary>, GetCash
 
   @override
   Future<CashflowSummary> execute(GetCashflowSummaryParams params) async {
-    return await repository.getCashflowSummary();
+    return await repository.getCashflowSummary(month: params.month);
   }
 }
 
 class GetCashflowSummaryParams extends Equatable {
-  const GetCashflowSummaryParams();
+  final DateTime? month;
+  
+  const GetCashflowSummaryParams({this.month});
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [month];
 }
