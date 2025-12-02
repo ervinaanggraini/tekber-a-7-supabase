@@ -38,6 +38,10 @@ enum Routes {
   register(
     name: "register",
     path: "/register",
+  ),
+  chat(
+    name: "chat",
+    path: "/chat",
   );
 
   const Routes({

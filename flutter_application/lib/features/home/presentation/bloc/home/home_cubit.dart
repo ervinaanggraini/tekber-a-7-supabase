@@ -17,7 +17,7 @@ class HomeCubit extends Cubit<HomeState> {
   HomeCubit({
     required this.getCashflowSummaryUseCase,
     required this.getRecentTransactionsUseCase,
-  }) : super(const HomeState());
+  }) : super(HomeState());
 
   Future<void> loadHomeData() async {
     emit(state.copyWith(status: HomeStatus.loading));
@@ -48,5 +48,29 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> refreshHomeData() async {
     await loadHomeData();
+  }
+
+  Future<void> changeMonth(DateTime newMonth) async {
+    emit(state.copyWith(
+      selectedMonth: newMonth,
+      status: HomeStatus.loading,
+    ));
+
+    try {
+      final cashflowSummary = await getCashflowSummaryUseCase.execute(
+        GetCashflowSummaryParams(month: newMonth),
+      );
+
+      emit(state.copyWith(
+        status: HomeStatus.loaded,
+        cashflowSummary: cashflowSummary,
+      ));
+    } catch (e) {
+      debugPrint('Error changing month: $e');
+      emit(state.copyWith(
+        status: HomeStatus.error,
+        errorMessage: e.toString(),
+      ));
+    }
   }
 }

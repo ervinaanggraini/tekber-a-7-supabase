@@ -9,6 +9,7 @@ import 'package:flutter_application/features/auth/presentation/page/register_pag
 import 'package:flutter_application/features/onboarding/presentation/page/onboarding_page.dart';
 import 'package:flutter_application/features/splash/presentation/page/splash_page.dart';
 import '../../features/auth/presentation/page/login_page.dart';
+import '../../features/chatbot/presentation/chat_screen.dart';
 
 final router = GoRouter(
   routes: [
@@ -59,6 +60,14 @@ final router = GoRouter(
       name: Routes.register.name,
       path: Routes.register.path,
       builder: (context, state) => const RegisterPage(),
+    ),
+    GoRoute(
+      name: Routes.chat.name,
+      path: Routes.chat.path,
+      builder: (context, state) {
+        final conversationId = state.extra as String?;
+        return ChatScreen(conversationId: conversationId);
+      },
     ),
   ],
 );

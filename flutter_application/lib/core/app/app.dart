@@ -6,6 +6,7 @@ import 'package:flutter_application/core/app/app_theme.dart';
 import 'package:flutter_application/dependency_injection.dart';
 import 'package:flutter_application/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:flutter_application/features/theme_mode/presentation/bloc/theme_mode_cubit.dart';
+import 'package:flutter_application/features/chatbot/presentation/cubit/chat_cubit.dart';
 
 class FlutterSupabaseStarterApp extends StatelessWidget {
   const FlutterSupabaseStarterApp({
@@ -57,6 +58,9 @@ class _AppBlocProvider extends StatelessWidget {
               )),
         BlocProvider(
           create: (_) => getIt<ThemeModeCubit>()..getCurrentTheme(),
+        ),
+        BlocProvider(
+          create: (_) => getIt<ChatCubit>(),
         ),
       ],
       child: child,

@@ -32,6 +32,14 @@ import 'package:flutter_application/features/auth/presentation/bloc/login/login_
     as _i723;
 import 'package:flutter_application/features/auth/presentation/bloc/register/register_cubit.dart'
     as _i553;
+import 'package:flutter_application/features/chatbot/data/data_sources/chat_remote_data_source.dart'
+    as _i592;
+import 'package:flutter_application/features/chatbot/di/chat_module.dart'
+    as _i428;
+import 'package:flutter_application/features/chatbot/domain/repositories/chat_repository.dart'
+    as _i159;
+import 'package:flutter_application/features/chatbot/presentation/cubit/chat_cubit.dart'
+    as _i914;
 import 'package:flutter_application/features/home/presentation/bloc/bottom_navigation_bar/bottom_navigation_bar_cubit.dart'
     as _i740;
 import 'package:flutter_application/features/home/presentation/bloc/home/home_cubit.dart'
@@ -91,11 +99,15 @@ extension GetItInjectableX on _i174.GetIt {
       environmentFilter,
     );
     final appModule = _$AppModule();
+    final chatModule = _$ChatModule();
     gh.factory<_i454.SupabaseClient>(() => appModule.supabaseClient);
     gh.factory<_i454.GoTrueClient>(() => appModule.supabaseAuth);
     gh.factory<_i454.FunctionsClient>(() => appModule.functionsClient);
     gh.factory<_i740.BottomNavigationBarCubit>(
         () => _i740.BottomNavigationBarCubit());
+    gh.lazySingleton<_i592.ChatRemoteDataSource>(
+        () => chatModule.chatRemoteDataSource);
+    gh.lazySingleton<_i159.ChatRepository>(() => chatModule.chatRepository);
     gh.factory<_i12.ThemeModeRepository>(() => _i279.ThemeModeHiveRepository());
     gh.factory<_i483.OnboardingRepository>(
         () => _i483.OnboardingRepositoryImpl());
@@ -123,6 +135,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i603.LogoutUseCase(gh<_i946.AuthRepository>()));
     gh.factory<_i829.SignUpWithEmailAndPasswordUseCase>(() =>
         _i829.SignUpWithEmailAndPasswordUseCase(gh<_i946.AuthRepository>()));
+    gh.factory<_i914.ChatCubit>(
+        () => _i914.ChatCubit(gh<_i159.ChatRepository>()));
     gh.factory<_i621.ThemeModeCubit>(() => _i621.ThemeModeCubit(
           gh<_i1023.GetOrSetInitialThemeModeUseCase>(),
           gh<_i727.SetThemeModeUseCase>(),
@@ -173,4 +187,6 @@ extension GetItInjectableX on _i174.GetIt {
   }
 }
 
-class _$AppModule extends _i690.AppModule {} // buat 
+class _$AppModule extends _i690.AppModule {}
+
+class _$ChatModule extends _i428.ChatModule {}
