@@ -1,3 +1,4 @@
+import 'dart:io';
 import '../entities/chat_conversation.dart';
 import '../entities/chat_message.dart';
 
@@ -18,6 +19,7 @@ abstract class ChatRepository {
   Future<ChatMessage> sendMessage({
     required String conversationId,
     required String message,
+    File? imageFile,
   });
 
   /// Delete a conversation

@@ -185,8 +185,22 @@ class HomeSkeletonLoading extends StatelessWidget {
           ),
           
           const SizedBox(height: Spacing.s24),
+          
+          // Floating Action Button Skeleton (positioned at bottom right)
+          Padding(
+            padding: const EdgeInsets.all(Spacing.s16),
+            child: Align(
+              alignment: Alignment.bottomRight,
+              child: SkeletonLoading(
+                width: 56,
+                height: 56,
+                borderRadius: BorderRadius.circular(28),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 }
+

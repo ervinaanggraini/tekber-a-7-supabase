@@ -11,6 +11,9 @@ import 'package:flutter_application/features/profile/presentation/page/profile_p
 import 'package:flutter_application/features/home/presentation/widgets/home_skeleton_loading.dart';
 import 'package:flutter_application/features/transactions/presentation/cubit/add_transaction_cubit.dart';
 import 'package:flutter_application/features/transactions/presentation/widgets/add_transaction_dialog.dart';
+import 'package:flutter_application/features/reports/presentation/page/reports_page.dart';
+import 'package:flutter_application/features/analytics/presentation/page/analytics_page.dart';
+import 'package:flutter_application/features/transaction/presentation/pages/transaction_history_page.dart';
 import 'package:flutter_application/dependency_injection.dart';
 
 class HomeContent extends StatelessWidget {
@@ -158,7 +161,7 @@ class _HomeContentView extends StatelessWidget {
                                 style: GoogleFonts.poppins(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: AppColors.b93160,
+                                  color: isDark ? Colors.pink[200] : AppColors.b93160,
                                 ),
                               ),
                               BlocBuilder<AuthBloc, AuthState>(
@@ -168,7 +171,7 @@ class _HomeContentView extends StatelessWidget {
                                       authState.user.email,
                                       style: GoogleFonts.poppins(
                                         fontSize: 14,
-                                        color: isDark ? Colors.white70 : Colors.black87,
+                                        color: isDark ? Colors.white : Colors.black87,
                                       ),
                                     );
                                   }
@@ -176,56 +179,31 @@ class _HomeContentView extends StatelessWidget {
                                     "User",
                                     style: GoogleFonts.poppins(
                                       fontSize: 14,
-                                      color: isDark ? Colors.white70 : Colors.black87,
+                                      color: isDark ? Colors.white : Colors.black87,
                                     ),
                                   );
                                 },
                               ),
                             ],
                           ),
-                          Row(
-                            children: [
-                              // Chat Button
-                              InkWell(
-                                onTap: () {
-                                  context.pushNamed(Routes.chat.name);
-                                },
-                                borderRadius: BorderRadius.circular(24),
-                                child: Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    gradient: AppColors.linier,
-                                  ),
-                                  child: const Icon(
-                                    Icons.chat_bubble_rounded,
-                                    color: Colors.white,
-                                    size: 24,
-                                  ),
+                          InkWell(
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => const ProfilePage(),
                                 ),
+                              );
+                            },
+                            borderRadius: BorderRadius.circular(24),
+                            child: const CircleAvatar(
+                              radius: 24,
+                              backgroundColor: AppColors.b93160,
+                              child: Icon(
+                                Icons.person,
+                                color: Colors.white,
+                                size: 28,
                               ),
-                              const SizedBox(width: 12),
-                              // Profile Button
-                              InkWell(
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => const ProfilePage(),
-                                    ),
-                                  );
-                                },
-                                borderRadius: BorderRadius.circular(24),
-                                child: const CircleAvatar(
-                                  radius: 24,
-                                  backgroundColor: AppColors.b93160,
-                                  child: Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: 28,
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ],
                       ),
@@ -238,7 +216,7 @@ class _HomeContentView extends StatelessWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(Spacing.s16),
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
+                          gradient: isDark ? null : const LinearGradient(
                             begin: Alignment.topLeft,
                             end: Alignment.bottomRight,
                             colors: [
@@ -247,7 +225,9 @@ class _HomeContentView extends StatelessWidget {
                               Color(0xFFFFF9C4),
                             ],
                           ),
+                          color: isDark ? Colors.grey[850] : null,
                           borderRadius: BorderRadius.circular(20),
+                          border: isDark ? Border.all(color: Colors.grey[700]!, width: 1) : null,
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.1),
@@ -268,7 +248,7 @@ class _HomeContentView extends StatelessWidget {
                                     vertical: 4,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.b93160,
+                                    color: isDark ? Colors.pink[300] : AppColors.b93160,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Text(
@@ -292,17 +272,16 @@ class _HomeContentView extends StatelessWidget {
                                         );
                                         context.read<HomeCubit>().changeMonth(previousMonth);
                                       },
-                                      icon: const Icon(Icons.chevron_left),
+                                      icon: Icon(Icons.chevron_left, color: isDark ? Colors.pink[200] : AppColors.b93160),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
-                                      color: AppColors.b93160,
                                     ),
                                     Text(
                                       _getMonthYearText(state.selectedMonth),
                                       style: GoogleFonts.poppins(
                                         fontSize: 13,
                                         fontWeight: FontWeight.w600,
-                                        color: AppColors.b93160,
+                                        color: isDark ? Colors.pink[200] : AppColors.b93160,
                                       ),
                                     ),
                                     IconButton(
@@ -319,10 +298,9 @@ class _HomeContentView extends StatelessWidget {
                                           context.read<HomeCubit>().changeMonth(nextMonth);
                                         }
                                       },
-                                      icon: const Icon(Icons.chevron_right),
+                                      icon: Icon(Icons.chevron_right, color: isDark ? Colors.pink[200] : AppColors.b93160),
                                       padding: EdgeInsets.zero,
                                       constraints: const BoxConstraints(),
-                                      color: AppColors.b93160,
                                     ),
                                   ],
                                 ),
@@ -336,7 +314,7 @@ class _HomeContentView extends StatelessWidget {
                               style: GoogleFonts.poppins(
                                 fontSize: 32,
                                 fontWeight: FontWeight.bold,
-                                color: AppColors.b93160,
+                                color: isDark ? Colors.pink[200] : AppColors.b93160,
                               ),
                             ),
                             const SizedBox(height: Spacing.s16),
@@ -346,7 +324,7 @@ class _HomeContentView extends StatelessWidget {
                                   child: Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.3),
+                                      color: isDark ? Colors.red.withOpacity(0.15) : Colors.white.withOpacity(0.3),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Column(
@@ -354,9 +332,9 @@ class _HomeContentView extends StatelessWidget {
                                       children: [
                                         Row(
                                           children: [
-                                            const Icon(
+                                            Icon(
                                               Icons.arrow_upward,
-                                              color: Colors.red,
+                                              color: isDark ? Colors.red[300] : Colors.red,
                                               size: 16,
                                             ),
                                             const SizedBox(width: 4),
@@ -364,7 +342,7 @@ class _HomeContentView extends StatelessWidget {
                                               "Pengeluaran",
                                               style: GoogleFonts.poppins(
                                                 fontSize: 12,
-                                                color: Colors.red,
+                                                color: isDark ? Colors.red[300] : Colors.red,
                                               ),
                                             ),
                                           ],
@@ -376,7 +354,7 @@ class _HomeContentView extends StatelessWidget {
                                               : "• Rp0 (0.0%)",
                                           style: GoogleFonts.poppins(
                                             fontSize: 11,
-                                            color: Colors.red,
+                                            color: isDark ? Colors.red[200] : Colors.red,
                                           ),
                                         ),
                                       ],
@@ -388,7 +366,7 @@ class _HomeContentView extends StatelessWidget {
                                   child: Container(
                                     padding: const EdgeInsets.all(12),
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.3),
+                                      color: isDark ? Colors.green.withOpacity(0.15) : Colors.white.withOpacity(0.3),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Column(
@@ -396,9 +374,9 @@ class _HomeContentView extends StatelessWidget {
                                       children: [
                                         Row(
                                           children: [
-                                            const Icon(
+                                            Icon(
                                               Icons.arrow_downward,
-                                              color: Colors.green,
+                                              color: isDark ? Colors.green[300] : Colors.green,
                                               size: 16,
                                             ),
                                             const SizedBox(width: 4),
@@ -406,7 +384,7 @@ class _HomeContentView extends StatelessWidget {
                                               "Pemasukan",
                                               style: GoogleFonts.poppins(
                                                 fontSize: 12,
-                                                color: Colors.green,
+                                                color: isDark ? Colors.green[300] : Colors.green,
                                               ),
                                             ),
                                           ],
@@ -418,7 +396,7 @@ class _HomeContentView extends StatelessWidget {
                                               : "• Rp0 (0.0%)",
                                           style: GoogleFonts.poppins(
                                             fontSize: 11,
-                                            color: Colors.green,
+                                            color: isDark ? Colors.green[200] : Colors.green,
                                           ),
                                         ),
                                       ],
@@ -441,17 +419,20 @@ class _HomeContentView extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           _MenuIcon(
+                            icon: Icons.chat_bubble_outline,
+                            label: "AI Chat",
+                            onTap: () {
+                              context.pushNamed(Routes.chat.name);
+                            },
+                          ),
+                          _MenuIcon(
                             icon: Icons.description_outlined,
                             label: "Report",
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Fitur Report sedang dalam pengembangan',
-                                    style: GoogleFonts.poppins(),
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: const Duration(seconds: 2),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const ReportsPage(),
                                 ),
                               );
                             },
@@ -460,14 +441,10 @@ class _HomeContentView extends StatelessWidget {
                             icon: Icons.analytics_outlined,
                             label: "Analytics",
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Fitur Analytics sedang dalam pengembangan',
-                                    style: GoogleFonts.poppins(),
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: const Duration(seconds: 2),
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const AnalyticsPage(),
                                 ),
                               );
                             },
@@ -488,22 +465,6 @@ class _HomeContentView extends StatelessWidget {
                               );
                             },
                           ),
-                          _MenuIcon(
-                            icon: Icons.newspaper_outlined,
-                            label: "News",
-                            onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Fitur News sedang dalam pengembangan',
-                                    style: GoogleFonts.poppins(),
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
-                            },
-                          ),
                         ],
                       ),
                     ),
@@ -513,13 +474,35 @@ class _HomeContentView extends StatelessWidget {
                     // Transaksi Terakhir
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
-                      child: Text(
-                        "Transaksi Terakhir",
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.b93160,
-                        ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Transaksi Terakhir",
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.pink[200] : AppColors.b93160,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const TransactionHistoryPage(),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              'Lihat Semua',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: isDark ? Colors.pink[200] : AppColors.b93160,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     
@@ -533,6 +516,7 @@ class _HomeContentView extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: isDark ? Colors.grey[850] : Colors.white,
                           borderRadius: BorderRadius.circular(12),
+                          border: isDark ? Border.all(color: Colors.grey[700]!, width: 1) : null,
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.05),
@@ -549,7 +533,7 @@ class _HomeContentView extends StatelessWidget {
                                     "Belum ada transaksi",
                                     style: GoogleFonts.poppins(
                                       fontSize: 14,
-                                      color: Colors.grey,
+                                      color: isDark ? Colors.white70 : Colors.grey[600],
                                     ),
                                   ),
                                 ),
@@ -584,12 +568,16 @@ class _HomeContentView extends StatelessWidget {
                                         style: GoogleFonts.poppins(
                                           fontWeight: FontWeight.w600,
                                           fontSize: 14,
+                                          color: isDark ? Colors.white : Colors.black87,
                                         ),
                                       ),
                                       subtitle: transaction.description != null && transaction.description!.isNotEmpty
                                           ? Text(
                                               transaction.description!,
-                                              style: GoogleFonts.poppins(fontSize: 12),
+                                              style: GoogleFonts.poppins(
+                                                fontSize: 12,
+                                                color: isDark ? Colors.white70 : Colors.grey[600],
+                                              ),
                                               maxLines: 1,
                                               overflow: TextOverflow.ellipsis,
                                             )
@@ -621,7 +609,7 @@ class _HomeContentView extends StatelessWidget {
                         style: GoogleFonts.poppins(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.b93160,
+                          color: isDark ? Colors.pink[200] : AppColors.b93160,
                         ),
                       ),
                     ),
@@ -690,7 +678,8 @@ class _MenuIcon extends StatelessWidget {
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              gradient: AppColors.linier,
+              gradient: isDark ? null : AppColors.linier,
+              color: isDark ? Colors.grey[800] : null,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -711,7 +700,7 @@ class _MenuIcon extends StatelessWidget {
             label,
             style: GoogleFonts.poppins(
               fontSize: 12,
-              color: isDark ? Colors.white70 : Colors.black87,
+              color: isDark ? Colors.white : Colors.black87,
             ),
           ),
         ],

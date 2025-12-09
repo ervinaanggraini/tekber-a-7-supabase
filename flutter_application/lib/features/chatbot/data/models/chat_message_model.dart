@@ -10,6 +10,7 @@ class ChatMessageModel extends ChatMessage {
     super.intent,
     super.extractedData,
     super.transactionId,
+    super.imageUrl,
     required super.createdAt,
   });
 
@@ -25,6 +26,7 @@ class ChatMessageModel extends ChatMessage {
           ? Map<String, dynamic>.from(json['extracted_data'] as Map)
           : null,
       transactionId: json['transaction_id'] as String?,
+      imageUrl: json['image_url'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
     );
   }
@@ -39,6 +41,7 @@ class ChatMessageModel extends ChatMessage {
       if (intent != null) 'intent': intent,
       if (extractedData != null) 'extracted_data': extractedData,
       if (transactionId != null) 'transaction_id': transactionId,
+      if (imageUrl != null) 'image_url': imageUrl,
       'created_at': createdAt.toIso8601String(),
     };
   }

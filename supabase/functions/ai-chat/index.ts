@@ -14,6 +14,7 @@ interface ChatRequest {
   conversationId?: string
   conversation_id?: string
   message: string
+  imageUrl?: string
 }
 
 // ============================================
@@ -23,8 +24,9 @@ const PERSONAS = {
   finny: {
     name: 'Finny',
     title: 'The Angry Mom',
-    // Menggunakan Qwen 2.5 7B (Gratis & Stabil)
-    model: 'qwen/qwen-2.5-7b-instruct:free', 
+    // Menggunakan Qwen 2.5 7B untuk text, Google Gemini Flash untuk vision
+    model: 'qwen/qwen-2.5-7b-instruct:free',
+    visionModel: 'google/gemini-flash-1.5-8b', 
     system_prompt: `Anda adalah Finny, seorang 'Angry Mom' (Ibu yang galak dan tegas) dalam urusan keuangan.
     
     Karakteristik:
@@ -38,8 +40,9 @@ const PERSONAS = {
   mona: {
     name: 'Mona',
     title: 'The Supportive Cheerleader',
-    // Menggunakan Phi-3 Medium (Gratis & Natural)
-    model: 'microsoft/phi-3-medium-128k-instruct:free', 
+    // Menggunakan Phi-3 Medium untuk text, Google Gemini Flash untuk vision
+    model: 'microsoft/phi-3-medium-128k-instruct:free',
+    visionModel: 'google/gemini-flash-1.5-8b',
     system_prompt: `Anda adalah Mona, teman yang sangat suportif dan ceria ('Cheerleader').
     
     Karakteristik:
@@ -53,8 +56,9 @@ const PERSONAS = {
   vesto: {
     name: 'Vesto',
     title: 'The Wise Mentor',
-    // Menggunakan Mistral 7B (Gratis & Logika Kuat)
-    model: 'mistralai/mistral-7b-instruct:free', 
+    // Menggunakan Mistral 7B untuk text, Google Gemini Flash untuk vision
+    model: 'mistralai/mistral-7b-instruct:free',
+    visionModel: 'google/gemini-flash-1.5-8b',
     system_prompt: `Anda adalah Vesto, seorang mentor bijaksana dengan aura seperti penyihir tua yang berilmu tinggi.
     
     Karakteristik:
@@ -122,7 +126,9 @@ serve(async (req: Request) => {
       })
     }
 
-    const { conversationId, conversation_id, message }: ChatRequest = await req.json()
+    const { conversationId, conversation_id, message, imageUrl }: ChatRequest = await req.json()
+    
+    console.log('📥 Received request:', { conversationId, conversation_id, message, imageUrl })
     
     // Support both parameter names
     const conversationIdValue = conversationId || conversation_id
@@ -163,7 +169,7 @@ serve(async (req: Request) => {
     const messages = [
       {
         role: 'system',
-        content: personaConfig.system_prompt + '\n\nINSTRUKSI PENTING: Berikan respons singkat dan natural (maksimal 2-3 kalimat) sesuai kepribadianmu. Jika user hanya menyapa (hi/halo/aloo), balas dengan sapaan ramah dan tanyakan bagaimana bisa membantu. Jika user menyebutkan transaksi (beli/bayar/terima uang), identifikasi jumlahnya dan berikan komentar singkat.'
+        content: personaConfig.system_prompt + '\n\nINSTRUKSI PENTING: Berikan respons singkat dan natural (maksimal 2-3 kalimat) sesuai kepribadianmu. Jika user hanya menyapa (hi/halo/aloo), balas dengan sapaan ramah dan tanyakan bagaimana bisa membantu. Jika user menyebutkan transaksi (beli/bayar/terima uang), identifikasi jumlahnya dan berikan komentar singkat. Jika ada gambar, deskripsikan apa yang kamu lihat dengan gaya bahasamu.'
       },
       ...messageHistory.map((msg: any) => ({
         role: msg.role,
@@ -171,9 +177,17 @@ serve(async (req: Request) => {
       })),
       {
         role: 'user',
-        content: message
+        content: imageUrl 
+          ? [
+              { type: 'text', text: message || 'Apa yang kamu lihat di gambar ini?' },
+              { type: 'image_url', image_url: { url: imageUrl } }
+            ]
+          : message
       }
     ]
+
+    // Use vision model if image is provided
+    const selectedModel = imageUrl ? personaConfig.visionModel : personaConfig.model
 
     // Call OpenRouter API with error handling
     let aiMessage: string
@@ -188,7 +202,7 @@ serve(async (req: Request) => {
           'X-Title': 'MoneyStocks AI'
         },
         body: JSON.stringify({
-          model: personaConfig.model,
+          model: selectedModel,
           messages: messages,
           temperature: 0.7, 
           max_tokens: 400,
@@ -241,6 +255,9 @@ serve(async (req: Request) => {
     }
     if (intent) userMessageData.intent = intent
     if (extractedData) userMessageData.extracted_data = extractedData
+    if (imageUrl) userMessageData.image_url = imageUrl
+    
+    console.log('💾 Saving user message:', userMessageData)
     
     await supabase.from('chat_messages').insert(userMessageData)
 

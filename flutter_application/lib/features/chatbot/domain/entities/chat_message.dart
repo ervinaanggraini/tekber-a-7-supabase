@@ -9,6 +9,7 @@ class ChatMessage extends Equatable {
   final String? intent;
   final Map<String, dynamic>? extractedData;
   final String? transactionId;
+  final String? imageUrl;
   final DateTime createdAt;
 
   const ChatMessage({
@@ -20,6 +21,7 @@ class ChatMessage extends Equatable {
     this.intent,
     this.extractedData,
     this.transactionId,
+    this.imageUrl,
     required this.createdAt,
   });
 
@@ -36,6 +38,7 @@ class ChatMessage extends Equatable {
         intent,
         extractedData,
         transactionId,
+        imageUrl,
         createdAt,
       ];
 }

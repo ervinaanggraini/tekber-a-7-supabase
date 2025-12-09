@@ -3,6 +3,7 @@ import 'package:flutter_application/core/extensions/hive_extensions.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:flutter_application/core/app/app.dart';
 import 'package:flutter_application/dependency_injection.dart';
@@ -13,6 +14,7 @@ void main() async {
   await dotenv.load(fileName: ".env");
   await _initializeSupabase();
   await _initializeHive();
+  await initializeDateFormatting('id_ID', null);
   configureDependencyInjection();
 
   runApp(

@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/chat_conversation.dart';
 import '../models/chat_conversation_model.dart';
@@ -11,6 +12,7 @@ abstract class ChatRemoteDataSource {
   Future<ChatMessageModel> sendMessage({
     required String conversationId,
     required String message,
+    File? imageFile,
   });
   Future<void> deleteConversation(String conversationId);
   Future<void> archiveConversation(String conversationId, bool archived);
@@ -82,9 +84,38 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   Future<ChatMessageModel> sendMessage({
     required String conversationId,
     required String message,
+    File? imageFile,
   }) async {
     print('🔵 Sending message to conversation: $conversationId');
     print('📝 Message: $message');
+    
+    String? imageUrl;
+    
+    // Upload image if provided
+    if (imageFile != null) {
+      print('📸 Uploading image...');
+      try {
+        final userId = supabase.auth.currentUser?.id;
+        if (userId == null) throw Exception('User not authenticated');
+        
+        final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
+        final filePath = '$userId/$conversationId/$fileName';
+        
+        await supabase.storage.from('chat-images').upload(
+          filePath,
+          imageFile,
+          fileOptions: const FileOptions(
+            contentType: 'image/jpeg',
+          ),
+        );
+        
+        imageUrl = supabase.storage.from('chat-images').getPublicUrl(filePath);
+        print('✅ Image uploaded: $imageUrl');
+      } catch (e) {
+        print('❌ Image upload failed: $e');
+        // Continue without image if upload fails
+      }
+    }
     
     try {
       // Call Edge Function with retry logic
@@ -94,6 +125,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         body: {
           'conversationId': conversationId,
           'message': message,
+          if (imageUrl != null) 'imageUrl': imageUrl,
         },
       );
 
@@ -144,23 +176,29 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
           'conversation_id': conversationId,
           'role': 'user',
           'content': message,
+          if (imageUrl != null) 'image_url': imageUrl,
         });
         print('✅ User message saved (fallback)');
 
         // Generate response based on persona
         String aiResponse;
-        switch (persona) {
-          case 'angry_mom':
-            aiResponse = '😤 Oke, Ibu catat ya! Jangan lupa, uang itu dicari susah payah loh. Ayo ceritakan lebih detail transaksimu!';
-            break;
-          case 'supportive_cheerleader':
-            aiResponse = '💖 Oke bestie! Aku udah catat nih! Semangat terus ya kelola keuangannya! Cerita lagi dong! ✨';
-            break;
-          case 'wise_mentor':
-            aiResponse = '🧙‍♂️ Baik, saya telah mencatat transaksi Anda. Mari kita lanjutkan membangun fondasi finansial yang kuat. Ada yang ingin Anda diskusikan?';
-            break;
-          default:
-            aiResponse = '🤖 Pesan Anda sudah diterima! Ada yang bisa saya bantu lagi?';
+        if (imageUrl != null) {
+          // If there's an image, provide a vision-related response
+          aiResponse = '🤖 Maaf, saat ini saya tidak bisa memproses gambar. Silakan coba lagi nanti atau jelaskan dengan teks!';
+        } else {
+          switch (persona) {
+            case 'angry_mom':
+              aiResponse = '😤 Oke, Ibu catat ya! Jangan lupa, uang itu dicari susah payah loh. Ayo ceritakan lebih detail transaksimu!';
+              break;
+            case 'supportive_cheerleader':
+              aiResponse = '💖 Oke bestie! Aku udah catat nih! Semangat terus ya kelola keuangannya! Cerita lagi dong! ✨';
+              break;
+            case 'wise_mentor':
+              aiResponse = '🧙‍♂️ Baik, saya telah mencatat transaksi Anda. Mari kita lanjutkan membangun fondasi finansial yang kuat. Ada yang ingin Anda diskusikan?';
+              break;
+            default:
+              aiResponse = '🤖 Pesan Anda sudah diterima! Ada yang bisa saya bantu lagi?';
+          }
         }
 
         await supabase.from('chat_messages').insert({

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 import '../../../core/constants/app_colors.dart';
 import '../domain/entities/chat_conversation.dart';
 import '../domain/entities/chat_message.dart';
@@ -19,12 +21,19 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
+  final _imagePicker = ImagePicker();
+  File? _selectedImage;
 
   @override
   void initState() {
     super.initState();
     if (widget.conversationId != null) {
       context.read<ChatCubit>().openConversation(widget.conversationId!);
+    } else {
+      // Show persona selector immediately if no conversation
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _showPersonaSelector();
+      });
     }
   }
 
@@ -47,38 +56,101 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _showPersonaSelector() {
+  Future<void> _pickImage() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70,
+        maxWidth: 1024,
+      );
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal memilih gambar: $e')),
+        );
+      }
+    }
+  }
+
+  Future<void> _takePicture() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 70,
+        maxWidth: 1024,
+      );
+      if (image != null) {
+        setState(() {
+          _selectedImage = File(image.path);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Gagal mengambil foto: $e')),
+        );
+      }
+    }
+  }
+
+  void _showImageSourceDialog() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
         decoration: BoxDecoration(
-          color: AppColors.f4e8da,
+          color: isDark ? Colors.grey[850] : AppColors.f4e8da,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         ),
         padding: EdgeInsets.all(20.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Pilih Asisten AI',
+              'Pilih Sumber Gambar',
               style: TextStyle(
-                fontSize: 20.sp,
+                fontSize: 18.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.b93160,
+                color: isDark ? Colors.pink[200] : AppColors.b93160,
               ),
             ),
             SizedBox(height: 20.h),
-            ...ChatPersona.values.map((persona) {
-              return _PersonaCard(
-                persona: persona,
-                onTap: () {
-                  Navigator.pop(context);
-                  context.read<ChatCubit>().createAndStartConversation(persona);
-                },
-              );
-            }).toList(),
+            ListTile(
+              leading: Icon(Icons.photo_library, color: isDark ? Colors.pink[200] : AppColors.b93160),
+              title: Text(
+                'Galeri',
+                style: TextStyle(
+                  color: isDark ? Colors.white : AppColors.b93160,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _pickImage();
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.camera_alt, color: isDark ? Colors.pink[200] : AppColors.b93160),
+              title: Text(
+                'Kamera',
+                style: TextStyle(
+                  color: isDark ? Colors.white : AppColors.b93160,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _takePicture();
+              },
+            ),
             SizedBox(height: 20.h),
           ],
         ),
@@ -86,10 +158,73 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  void _removeImage() {
+    setState(() {
+      _selectedImage = null;
+    });
+  }
+
+  String _getPersonaImagePath(ChatPersona persona) {
+    switch (persona) {
+      case ChatPersona.angryMom:
+        return 'assets/images/finny.png';
+      case ChatPersona.supportiveCheerleader:
+        return 'assets/images/mona.png';
+      case ChatPersona.wiseMentor:
+        return 'assets/images/vesto.png';
+    }
+  }
+
+  void _showPersonaSelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => Dialog(
+        backgroundColor: isDark ? Colors.grey[850] : AppColors.f4e8da,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.r),
+          side: isDark ? BorderSide(color: Colors.grey[700]!, width: 1) : BorderSide.none,
+        ),
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Pilih Kepribadian',
+                style: TextStyle(
+                  fontSize: 20.sp,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.pink[200] : AppColors.b93160,
+                ),
+              ),
+              SizedBox(height: 24.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: ChatPersona.values.map((persona) {
+                  return _PersonaAvatar(
+                    persona: persona,
+                    onTap: () {
+                      Navigator.pop(context);
+                      context.read<ChatCubit>().createAndStartConversation(persona);
+                    },
+                  );
+                }).toList(),
+              ),
+              SizedBox(height: 16.h),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: AppColors.f4e8da,
+      backgroundColor: isDark ? Colors.grey[900] : AppColors.f4e8da,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -98,11 +233,39 @@ class _ChatScreenState extends State<ChatScreen> {
             if (state is ChatConversationActive) {
               return Row(
                 children: [
-                  Text(
-                    state.conversation.persona.emoji,
-                    style: TextStyle(fontSize: 24.sp),
+                  Container(
+                    width: 40.w,
+                    height: 40.w,
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.grey[800] : Colors.white,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        _getPersonaImagePath(state.conversation.persona),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: AppColors.ffb4c2,
+                            child: Center(
+                              child: Text(
+                                state.conversation.persona.emoji,
+                                style: TextStyle(fontSize: 20.sp),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
-                  SizedBox(width: 8.w),
+                  SizedBox(width: 12.w),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -152,7 +315,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 children: [
                   Text(
                     'Error: ${state.message}',
-                    style: TextStyle(color: AppColors.b93160),
+                    style: TextStyle(color: isDark ? Colors.pink[200] : AppColors.b93160),
                   ),
                   SizedBox(height: 16.h),
                   ElevatedButton(
@@ -179,7 +342,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           itemBuilder: (context, index) {
                             // Show typing indicator as last item when sending
                             if (index == state.messages.length && state.isSending) {
-                              return _TypingIndicator();
+                              return _TypingIndicator(persona: state.conversation.persona.value);
                             }
                             
                             final message = state.messages[index];
@@ -189,12 +352,21 @@ class _ChatScreenState extends State<ChatScreen> {
                 ),
                 _MessageInput(
                   controller: _messageController,
+                  selectedImage: _selectedImage,
+                  onPickImage: _showImageSourceDialog,
+                  onRemoveImage: _removeImage,
                   onSend: () {
-                    if (_messageController.text.trim().isNotEmpty) {
+                    if (_messageController.text.trim().isNotEmpty || _selectedImage != null) {
                       context
                           .read<ChatCubit>()
-                          .sendMessage(_messageController.text.trim());
+                          .sendMessage(
+                            _messageController.text.trim(),
+                            imageFile: _selectedImage,
+                          );
                       _messageController.clear();
+                      setState(() {
+                        _selectedImage = null;
+                      });
                     }
                   },
                   enabled: !state.isSending,
@@ -217,6 +389,7 @@ class _EmptyStateView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -240,7 +413,7 @@ class _EmptyStateView extends StatelessWidget {
             style: TextStyle(
               fontSize: 20.sp,
               fontWeight: FontWeight.bold,
-              color: AppColors.b93160,
+              color: isDark ? Colors.pink[200] : AppColors.b93160,
             ),
           ),
           SizedBox(height: 8.h),
@@ -296,17 +469,57 @@ class _EmptyMessagesView extends StatelessWidget {
 
   const _EmptyMessagesView({required this.persona});
 
+  String _getPersonaImagePath(ChatPersona persona) {
+    switch (persona) {
+      case ChatPersona.angryMom:
+        return 'assets/images/finny.png';
+      case ChatPersona.supportiveCheerleader:
+        return 'assets/images/mona.png';
+      case ChatPersona.wiseMentor:
+        return 'assets/images/vesto.png';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Padding(
         padding: EdgeInsets.all(32.w),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              persona.emoji,
-              style: TextStyle(fontSize: 80.sp),
+            Container(
+              width: 120.w,
+              height: 120.w,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 15,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  _getPersonaImagePath(persona),
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      color: AppColors.f4e8da,
+                      child: Center(
+                        child: Text(
+                          persona.emoji,
+                          style: TextStyle(fontSize: 48.sp),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ),
             SizedBox(height: 16.h),
             Text(
@@ -314,7 +527,7 @@ class _EmptyMessagesView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.bold,
-                color: AppColors.b93160,
+                color: isDark ? Colors.pink[200] : AppColors.b93160,
               ),
             ),
             SizedBox(height: 8.h),
@@ -355,10 +568,11 @@ class _PersonaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       margin: EdgeInsets.only(bottom: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? Colors.grey[850] : Colors.white,
         borderRadius: BorderRadius.circular(16.r),
         boxShadow: [
           BoxShadow(
@@ -401,7 +615,7 @@ class _PersonaCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
-                          color: AppColors.b93160,
+                          color: isDark ? Colors.pink[200] : AppColors.b93160,
                         ),
                       ),
                       SizedBox(height: 4.h),
@@ -429,14 +643,110 @@ class _PersonaCard extends StatelessWidget {
   }
 }
 
+class _PersonaAvatar extends StatelessWidget {
+  final ChatPersona persona;
+  final VoidCallback onTap;
+
+  const _PersonaAvatar({
+    required this.persona,
+    required this.onTap,
+  });
+
+  String _getImagePath(ChatPersona persona) {
+    switch (persona) {
+      case ChatPersona.angryMom:
+        return 'assets/images/finny.png';
+      case ChatPersona.supportiveCheerleader:
+        return 'assets/images/mona.png';
+      case ChatPersona.wiseMentor:
+        return 'assets/images/vesto.png';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 80.w,
+            height: 80.w,
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey[800] : Colors.white,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: Image.asset(
+                _getImagePath(persona),
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: isDark ? Colors.grey[700] : AppColors.f4e8da,
+                    child: Center(
+                      child: Text(
+                        persona.emoji,
+                        style: TextStyle(fontSize: 32.sp),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          SizedBox(height: 8.h),
+          Text(
+            persona.name,
+            style: TextStyle(
+              fontSize: 14.sp,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.pink[200] : AppColors.b93160,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _ChatBubble extends StatelessWidget {
   final ChatMessage message;
 
   const _ChatBubble({required this.message});
 
+  String _getPersonaImage(String persona) {
+    switch (persona) {
+      case 'angry_mom':
+        return 'assets/images/finny.png';
+      case 'supportive_cheerleader':
+        return 'assets/images/mona.png';
+      case 'wise_mentor':
+        return 'assets/images/vesto.png';
+      default:
+        return 'assets/images/vesto.png';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final isUser = message.isUser;
+    
+    // Debug print
+    print('💬 Rendering message:');
+    print('   - Role: ${message.role}');
+    print('   - Content: ${message.content}');
+    print('   - ImageUrl: ${message.imageUrl}');
+    print('   - Has image: ${message.imageUrl != null && message.imageUrl!.isNotEmpty}');
 
     return Padding(
       padding: EdgeInsets.only(bottom: 12.h),
@@ -446,12 +756,39 @@ class _ChatBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isUser) ...[
-            CircleAvatar(
-              radius: 16.r,
-              backgroundColor: AppColors.ffb4c2,
-              child: Text(
-                '🤖',
-                style: TextStyle(fontSize: 16.sp),
+            Container(
+              width: 32.w,
+              height: 32.w,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[800] : Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: ClipOval(
+                child: message.persona != null
+                    ? Image.asset(
+                        _getPersonaImage(message.persona!),
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            color: AppColors.ffb4c2,
+                            child: Center(
+                              child: Text(
+                                '🤖',
+                                style: TextStyle(fontSize: 16.sp),
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    : Container(
+                        color: AppColors.ffb4c2,
+                        child: Center(
+                          child: Text(
+                            '🤖',
+                            style: TextStyle(fontSize: 16.sp),
+                          ),
+                        ),
+                      ),
               ),
             ),
             SizedBox(width: 8.w),
@@ -461,7 +798,7 @@ class _ChatBubble extends StatelessWidget {
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
               decoration: BoxDecoration(
                 gradient: isUser ? AppColors.linier : null,
-                color: isUser ? null : Colors.white,
+                color: isUser ? null : (isDark ? Colors.grey[850] : Colors.white),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(16.r),
                   topRight: Radius.circular(16.r),
@@ -476,12 +813,56 @@ class _ChatBubble extends StatelessWidget {
                   ),
                 ],
               ),
-              child: Text(
-                message.content,
-                style: TextStyle(
-                  fontSize: 14.sp,
-                  color: isUser ? Colors.white : AppColors.b93160,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (message.imageUrl != null && message.imageUrl!.isNotEmpty && message.imageUrl != 'loading') ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(8.r),
+                      child: Image.network(
+                        message.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 150.h,
+                            color: Colors.grey[300],
+                            child: Center(
+                              child: Icon(
+                                Icons.broken_image,
+                                color: Colors.grey[600],
+                                size: 40.sp,
+                              ),
+                            ),
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Container(
+                            height: 150.h,
+                            color: Colors.grey[200],
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                value: loadingProgress.expectedTotalBytes != null
+                                    ? loadingProgress.cumulativeBytesLoaded /
+                                        loadingProgress.expectedTotalBytes!
+                                    : null,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    if (message.content.isNotEmpty) SizedBox(height: 8.h),
+                  ],
+                  if (message.content.isNotEmpty)
+                    Text(
+                      message.content,
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: isUser ? Colors.white : (isDark ? Colors.white : AppColors.b93160),
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -504,16 +885,50 @@ class _ChatBubble extends StatelessWidget {
 }
 
 class _TypingIndicator extends StatelessWidget {
+  final String persona;
+
+  const _TypingIndicator({required this.persona});
+
+  String _getPersonaImage(String persona) {
+    switch (persona) {
+      case 'angry_mom':
+        return 'assets/images/finny.png';
+      case 'supportive_cheerleader':
+        return 'assets/images/mona.png';
+      case 'wise_mentor':
+        return 'assets/images/vesto.png';
+      default:
+        return 'assets/images/vesto.png';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        CircleAvatar(
-          radius: 16.r,
-          backgroundColor: AppColors.ffb4c2,
-          child: Text(
-            '🤖',
-            style: TextStyle(fontSize: 16.sp),
+        Container(
+          width: 32.w,
+          height: 32.w,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: ClipOval(
+            child: Image.asset(
+              _getPersonaImage(persona),
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  color: AppColors.ffb4c2,
+                  child: Center(
+                    child: Text(
+                      '🤖',
+                      style: TextStyle(fontSize: 16.sp),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ),
         SizedBox(width: 8.w),
@@ -546,20 +961,28 @@ class _TypingIndicator extends StatelessWidget {
 class _MessageInput extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSend;
+  final VoidCallback onPickImage;
+  final VoidCallback onRemoveImage;
+  final File? selectedImage;
   final bool enabled;
 
   const _MessageInput({
     required this.controller,
     required this.onSend,
+    required this.onPickImage,
+    required this.onRemoveImage,
+    this.selectedImage,
     required this.enabled,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: isDark ? Colors.grey[850] : Colors.white,
+        border: isDark ? Border(top: BorderSide(color: Colors.grey[700]!, width: 1)) : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -568,67 +991,166 @@ class _MessageInput extends StatelessWidget {
           ),
         ],
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.f4e8da,
-                borderRadius: BorderRadius.circular(25.r),
-              ),
-              child: TextField(
-                controller: controller,
-                enabled: enabled,
-                maxLines: null,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
-                  hintText: 'Ketik pesan...',
-                  hintStyle: TextStyle(
-                    color: AppColors.ac9780,
-                    fontSize: 14.sp,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 12.h,
-                  ),
-                  border: InputBorder.none,
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Image preview
+            if (selectedImage != null) ...[
+              Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.image,
+                      size: 16.sp,
+                      color: isDark ? Colors.pink[200] : AppColors.b93160,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      'Gambar terlampir',
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        color: isDark ? Colors.pink[200] : AppColors.b93160,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
                 ),
-                onSubmitted: enabled ? (_) => onSend() : null,
               ),
-            ),
-          ),
-          SizedBox(width: 12.w),
-          Container(
-            decoration: BoxDecoration(
-              gradient: AppColors.linier,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.ffb4c2.withOpacity(0.3),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+              Container(
+                margin: EdgeInsets.only(bottom: 12.h),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.grey[800] : AppColors.f4e8da,
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12.r),
+                      child: Image.file(
+                        selectedImage!,
+                        height: 150.h,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                    Positioned(
+                      top: 8.h,
+                      right: 8.w,
+                      child: GestureDetector(
+                        onTap: onRemoveImage,
+                        child: Container(
+                          padding: EdgeInsets.all(6.w),
+                          decoration: const BoxDecoration(
+                            color: Colors.black54,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.white,
+                            size: 18.sp,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+            // Input row
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                // Image picker button
+                GestureDetector(
+                  onTap: enabled ? onPickImage : null,
+                  child: Container(
+                    padding: EdgeInsets.all(10.w),
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.grey[800] : AppColors.f4e8da,
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Icon(
+                      Icons.image_outlined,
+                      color: enabled ? (isDark ? Colors.pink[200] : AppColors.b93160) : AppColors.ac9780,
+                      size: 24.sp,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: isDark ? Colors.grey[800] : Colors.white,
+                      borderRadius: BorderRadius.circular(25.r),
+                      border: Border.all(
+                        color: isDark ? Colors.grey[700]! : AppColors.ac9780.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: TextField(
+                      controller: controller,
+                      enabled: enabled,
+                      maxLines: null,
+                      textCapitalization: TextCapitalization.sentences,
+                      style: TextStyle(
+                        color: isDark ? Colors.white : AppColors.b93160,
+                        fontSize: 14.sp,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'Ketik pesan...',
+                        hintStyle: TextStyle(
+                          color: isDark ? Colors.grey[500] : AppColors.ac9780,
+                          fontSize: 14.sp,
+                        ),
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20.w,
+                          vertical: 12.h,
+                        ),
+                        border: InputBorder.none,
+                        isDense: true,
+                      ),
+                      onSubmitted: enabled ? (_) => onSend() : null,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 12.w),
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: AppColors.linier,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.ffb4c2.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: enabled ? onSend : null,
+                      customBorder: const CircleBorder(),
+                      child: Container(
+                        width: 48.w,
+                        height: 48.w,
+                        alignment: Alignment.center,
+                        child: Icon(
+                          Icons.send_rounded,
+                          color: Colors.white,
+                          size: 24.sp,
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            child: Material(
-              color: Colors.transparent,
-              child: InkWell(
-                onTap: enabled ? onSend : null,
-                customBorder: const CircleBorder(),
-                child: Container(
-                  width: 48.w,
-                  height: 48.w,
-                  alignment: Alignment.center,
-                  child: Icon(
-                    Icons.send_rounded,
-                    color: Colors.white,
-                    size: 24.sp,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

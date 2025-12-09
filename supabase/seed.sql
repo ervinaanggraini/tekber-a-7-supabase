@@ -6,33 +6,35 @@
 -- 1. DEFAULT CATEGORIES
 -- ============================================
 
--- Income Categories
+-- Income Categories (Fixed UUIDs)
 INSERT INTO public.categories (id, name, type, icon, color, is_system) VALUES
-(uuid_generate_v4(), 'Gaji', 'income', '💰', '#4CAF50', TRUE),
-(uuid_generate_v4(), 'Bonus', 'income', '🎁', '#8BC34A', TRUE),
-(uuid_generate_v4(), 'Investasi', 'income', '📈', '#009688', TRUE),
-(uuid_generate_v4(), 'Freelance', 'income', '💼', '#00BCD4', TRUE),
-(uuid_generate_v4(), 'Bisnis', 'income', '🏢', '#03A9F4', TRUE),
-(uuid_generate_v4(), 'Hadiah', 'income', '🎉', '#2196F3', TRUE),
-(uuid_generate_v4(), 'Lainnya', 'income', '➕', '#607D8B', TRUE);
+('00000000-0000-0000-0000-000000000001', 'Gaji', 'income', '💰', '#4CAF50', TRUE),
+('00000000-0000-0000-0000-000000000002', 'Bonus', 'income', '🎁', '#8BC34A', TRUE),
+('00000000-0000-0000-0000-000000000003', 'Investasi', 'income', '📈', '#009688', TRUE),
+('00000000-0000-0000-0000-000000000004', 'Freelance', 'income', '💼', '#00BCD4', TRUE),
+('00000000-0000-0000-0000-000000000005', 'Bisnis', 'income', '🏢', '#03A9F4', TRUE),
+('00000000-0000-0000-0000-000000000006', 'Hadiah', 'income', '🎉', '#2196F3', TRUE),
+('00000000-0000-0000-0000-000000000007', 'Lainnya', 'income', '➕', '#607D8B', TRUE)
+ON CONFLICT (id) DO NOTHING;
 
--- Expense Categories
+-- Expense Categories (Fixed UUIDs)
 INSERT INTO public.categories (id, name, type, icon, color, is_system) VALUES
-(uuid_generate_v4(), 'Makanan & Minuman', 'expense', '🍔', '#FF5722', TRUE),
-(uuid_generate_v4(), 'Transportasi', 'expense', '🚗', '#FF9800', TRUE),
-(uuid_generate_v4(), 'Belanja', 'expense', '🛒', '#FFC107', TRUE),
-(uuid_generate_v4(), 'Tagihan', 'expense', '📄', '#F44336', TRUE),
-(uuid_generate_v4(), 'Hiburan', 'expense', '🎮', '#E91E63', TRUE),
-(uuid_generate_v4(), 'Kesehatan', 'expense', '🏥', '#9C27B0', TRUE),
-(uuid_generate_v4(), 'Pendidikan', 'expense', '📚', '#673AB7', TRUE),
-(uuid_generate_v4(), 'Investasi', 'expense', '💎', '#3F51B5', TRUE),
-(uuid_generate_v4(), 'Cicilan', 'expense', '💳', '#D32F2F', TRUE),
-(uuid_generate_v4(), 'Asuransi', 'expense', '🛡️', '#795548', TRUE),
-(uuid_generate_v4(), 'Donasi', 'expense', '❤️', '#E91E63', TRUE),
-(uuid_generate_v4(), 'Kecantikan', 'expense', '💄', '#EC407A', TRUE),
-(uuid_generate_v4(), 'Olahraga', 'expense', '⚽', '#66BB6A', TRUE),
-(uuid_generate_v4(), 'Hadiah', 'expense', '🎁', '#AB47BC', TRUE),
-(uuid_generate_v4(), 'Lainnya', 'expense', '❓', '#607D8B', TRUE);
+('00000000-0000-0000-0000-000000000011', 'Makanan & Minuman', 'expense', '🍔', '#FF5722', TRUE),
+('00000000-0000-0000-0000-000000000012', 'Transportasi', 'expense', '🚗', '#FF9800', TRUE),
+('00000000-0000-0000-0000-000000000013', 'Belanja', 'expense', '🛒', '#FFC107', TRUE),
+('00000000-0000-0000-0000-000000000014', 'Tagihan', 'expense', '📄', '#F44336', TRUE),
+('00000000-0000-0000-0000-000000000015', 'Hiburan', 'expense', '🎮', '#E91E63', TRUE),
+('00000000-0000-0000-0000-000000000016', 'Kesehatan', 'expense', '🏥', '#9C27B0', TRUE),
+('00000000-0000-0000-0000-000000000017', 'Pendidikan', 'expense', '📚', '#673AB7', TRUE),
+('00000000-0000-0000-0000-000000000018', 'Investasi', 'expense', '💎', '#3F51B5', TRUE),
+('00000000-0000-0000-0000-000000000019', 'Cicilan', 'expense', '💳', '#D32F2F', TRUE),
+('00000000-0000-0000-0000-000000000020', 'Asuransi', 'expense', '🛡️', '#795548', TRUE),
+('00000000-0000-0000-0000-000000000021', 'Donasi', 'expense', '❤️', '#E91E63', TRUE),
+('00000000-0000-0000-0000-000000000022', 'Kecantikan', 'expense', '💄', '#EC407A', TRUE),
+('00000000-0000-0000-0000-000000000023', 'Olahraga', 'expense', '⚽', '#66BB6A', TRUE),
+('00000000-0000-0000-0000-000000000024', 'Hadiah', 'expense', '🎁', '#AB47BC', TRUE),
+('00000000-0000-0000-0000-000000000025', 'Lainnya', 'expense', '❓', '#607D8B', TRUE)
+ON CONFLICT (id) DO NOTHING;
 
 -- ============================================
 -- 2. BADGES (ACHIEVEMENTS)

@@ -335,6 +335,8 @@ class _TypeButton extends StatelessWidget {
               fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
               fontSize: 13,
             ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
           ),
         ),
       ),
@@ -470,6 +472,7 @@ class _CustomDropdownState extends State<_CustomDropdown> {
           },
           child: DropdownButtonFormField<Category>(
             value: widget.value,
+            isExpanded: true,
             decoration: InputDecoration(
               labelText: widget.label,
               prefixIcon: Icon(
@@ -477,7 +480,7 @@ class _CustomDropdownState extends State<_CustomDropdown> {
                 color: _isFocused ? AppColors.b93160 : Colors.grey,
                 size: 20,
               ),
-              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(_isFocused ? 10 : 12),
                 borderSide: BorderSide.none,
@@ -496,7 +499,11 @@ class _CustomDropdownState extends State<_CustomDropdown> {
             items: widget.items.map((category) {
               return DropdownMenuItem(
                 value: category,
-                child: Text(category.name),
+                child: Text(
+                  category.name,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
               );
             }).toList(),
             onChanged: widget.onChanged,

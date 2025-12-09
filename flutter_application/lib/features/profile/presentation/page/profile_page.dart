@@ -69,7 +69,7 @@ class _ProfilePageState extends State<ProfilePage> {
               margin: const EdgeInsets.symmetric(horizontal: Spacing.s16),
               padding: const EdgeInsets.all(Spacing.s24),
               decoration: BoxDecoration(
-                gradient: const LinearGradient(
+                gradient: isDark ? null : const LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
@@ -77,7 +77,9 @@ class _ProfilePageState extends State<ProfilePage> {
                     Color(0xFFFFCCBC),
                   ],
                 ),
+                color: isDark ? Colors.grey[850] : null,
                 borderRadius: BorderRadius.circular(20),
+                border: isDark ? Border.all(color: Colors.grey[700]!, width: 1) : null,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.1),
@@ -90,10 +92,10 @@ class _ProfilePageState extends State<ProfilePage> {
                 children: [
                   CircleAvatar(
                     radius: 40,
-                    backgroundColor: Colors.white,
+                    backgroundColor: isDark ? Colors.grey[800] : Colors.white,
                     child: CircleAvatar(
                       radius: 38,
-                      backgroundColor: AppColors.b93160,
+                      backgroundColor: isDark ? Colors.pink[300] : AppColors.b93160,
                       child: const Icon(
                         Icons.person,
                         color: Colors.white,

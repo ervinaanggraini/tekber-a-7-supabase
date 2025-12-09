@@ -10,6 +10,18 @@
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'package:flutter_application/core/app/app_module.dart' as _i690;
+import 'package:flutter_application/features/analytics/data/data_sources/analytics_remote_data_source.dart'
+    as _i125;
+import 'package:flutter_application/features/analytics/data/repositories/analytics_repository_impl.dart'
+    as _i36;
+import 'package:flutter_application/features/analytics/domain/repositories/analytics_repository.dart'
+    as _i905;
+import 'package:flutter_application/features/analytics/domain/use_cases/get_analytics_summary_use_case.dart'
+    as _i652;
+import 'package:flutter_application/features/analytics/domain/use_cases/update_savings_goal_use_case.dart'
+    as _i646;
+import 'package:flutter_application/features/analytics/presentation/cubit/analytics_cubit.dart'
+    as _i870;
 import 'package:flutter_application/features/auth/data/repository/supabase_auth_repository.dart'
     as _i476;
 import 'package:flutter_application/features/auth/domain/repository/auth_repository.dart'
@@ -48,6 +60,16 @@ import 'package:flutter_application/features/onboarding/data/repository/onboardi
     as _i483;
 import 'package:flutter_application/features/onboarding/presentation/cubit/onboarding_cubit.dart'
     as _i177;
+import 'package:flutter_application/features/reports/data/data_sources/report_remote_data_source.dart'
+    as _i873;
+import 'package:flutter_application/features/reports/data/repositories/report_repository_impl.dart'
+    as _i194;
+import 'package:flutter_application/features/reports/domain/repositories/report_repository.dart'
+    as _i62;
+import 'package:flutter_application/features/reports/domain/use_cases/get_report_summary_use_case.dart'
+    as _i161;
+import 'package:flutter_application/features/reports/presentation/cubit/reports_cubit.dart'
+    as _i180;
 import 'package:flutter_application/features/theme_mode/data/repository/theme_mode_hive_repository.dart'
     as _i279;
 import 'package:flutter_application/features/theme_mode/domain/repository/theme_mode_repository.dart'
@@ -58,6 +80,8 @@ import 'package:flutter_application/features/theme_mode/domain/use_case/set_them
     as _i727;
 import 'package:flutter_application/features/theme_mode/presentation/bloc/theme_mode_cubit.dart'
     as _i621;
+import 'package:flutter_application/features/transaction/presentation/bloc/transaction_bloc.dart'
+    as _i124;
 import 'package:flutter_application/features/transactions/data/data_sources/transaction_remote_data_source.dart'
     as _i713;
 import 'package:flutter_application/features/transactions/data/repositories/transaction_repository_impl.dart'
@@ -66,12 +90,16 @@ import 'package:flutter_application/features/transactions/domain/repositories/tr
     as _i993;
 import 'package:flutter_application/features/transactions/domain/use_cases/create_transaction_use_case.dart'
     as _i198;
+import 'package:flutter_application/features/transactions/domain/use_cases/delete_transaction_use_case.dart'
+    as _i219;
 import 'package:flutter_application/features/transactions/domain/use_cases/get_cashflow_summary_use_case.dart'
     as _i357;
 import 'package:flutter_application/features/transactions/domain/use_cases/get_categories_use_case.dart'
     as _i268;
 import 'package:flutter_application/features/transactions/domain/use_cases/get_recent_transactions_use_case.dart'
     as _i725;
+import 'package:flutter_application/features/transactions/domain/use_cases/update_transaction_use_case.dart'
+    as _i162;
 import 'package:flutter_application/features/transactions/presentation/cubit/add_transaction_cubit.dart'
     as _i621;
 import 'package:flutter_application/features/user/data/repository/supabase_user_repository.dart'
@@ -108,9 +136,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i592.ChatRemoteDataSource>(
         () => chatModule.chatRemoteDataSource);
     gh.lazySingleton<_i159.ChatRepository>(() => chatModule.chatRepository);
+    gh.lazySingleton<_i125.AnalyticsRemoteDataSource>(
+        () => _i125.AnalyticsRemoteDataSourceImpl(gh<_i454.SupabaseClient>()));
     gh.factory<_i12.ThemeModeRepository>(() => _i279.ThemeModeHiveRepository());
     gh.factory<_i483.OnboardingRepository>(
         () => _i483.OnboardingRepositoryImpl());
+    gh.lazySingleton<_i905.AnalyticsRepository>(() =>
+        _i36.AnalyticsRepositoryImpl(gh<_i125.AnalyticsRemoteDataSource>()));
+    gh.lazySingleton<_i873.ReportRemoteDataSource>(
+        () => _i873.ReportRemoteDataSourceImpl(gh<_i454.SupabaseClient>()));
     gh.factory<_i946.AuthRepository>(() => _i476.SupabaseAuthRepository(
           gh<_i454.GoTrueClient>(),
           gh<_i454.SupabaseClient>(),
@@ -135,6 +169,10 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i603.LogoutUseCase(gh<_i946.AuthRepository>()));
     gh.factory<_i829.SignUpWithEmailAndPasswordUseCase>(() =>
         _i829.SignUpWithEmailAndPasswordUseCase(gh<_i946.AuthRepository>()));
+    gh.factory<_i652.GetAnalyticsSummaryUseCase>(() =>
+        _i652.GetAnalyticsSummaryUseCase(gh<_i905.AnalyticsRepository>()));
+    gh.factory<_i646.UpdateSavingsGoalUseCase>(
+        () => _i646.UpdateSavingsGoalUseCase(gh<_i905.AnalyticsRepository>()));
     gh.factory<_i914.ChatCubit>(
         () => _i914.ChatCubit(gh<_i159.ChatRepository>()));
     gh.factory<_i621.ThemeModeCubit>(() => _i621.ThemeModeCubit(
@@ -152,6 +190,12 @@ extension GetItInjectableX on _i174.GetIt {
             supabaseClient: gh<_i454.SupabaseClient>()));
     gh.factory<_i553.RegisterCubit>(() =>
         _i553.RegisterCubit(gh<_i829.SignUpWithEmailAndPasswordUseCase>()));
+    gh.lazySingleton<_i62.ReportRepository>(
+        () => _i194.ReportRepositoryImpl(gh<_i873.ReportRemoteDataSource>()));
+    gh.factory<_i870.AnalyticsCubit>(() => _i870.AnalyticsCubit(
+          gh<_i652.GetAnalyticsSummaryUseCase>(),
+          gh<_i646.UpdateSavingsGoalUseCase>(),
+        ));
     gh.factory<_i627.ChangeEmailAddressUseCase>(
         () => _i627.ChangeEmailAddressUseCase(gh<_i392.UserRepository>()));
     gh.factory<_i964.AuthBloc>(() => _i964.AuthBloc(
@@ -159,6 +203,8 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i781.GetCurrentAuthStateUseCase>(),
           gh<_i603.LogoutUseCase>(),
         ));
+    gh.factory<_i161.GetReportSummaryUseCase>(
+        () => _i161.GetReportSummaryUseCase(gh<_i62.ReportRepository>()));
     gh.lazySingleton<_i993.TransactionRepository>(() =>
         _i661.TransactionRepositoryImpl(
             remoteDataSource: gh<_i713.TransactionRemoteDataSource>()));
@@ -177,8 +223,18 @@ extension GetItInjectableX on _i174.GetIt {
         ));
     gh.factory<_i198.CreateTransactionUseCase>(() =>
         _i198.CreateTransactionUseCase(gh<_i993.TransactionRepository>()));
+    gh.factory<_i219.DeleteTransactionUseCase>(() =>
+        _i219.DeleteTransactionUseCase(gh<_i993.TransactionRepository>()));
     gh.factory<_i268.GetCategoriesUseCase>(
         () => _i268.GetCategoriesUseCase(gh<_i993.TransactionRepository>()));
+    gh.factory<_i162.UpdateTransactionUseCase>(() =>
+        _i162.UpdateTransactionUseCase(gh<_i993.TransactionRepository>()));
+    gh.factory<_i124.TransactionBloc>(() => _i124.TransactionBloc(
+          gh<_i725.GetRecentTransactionsUseCase>(),
+          gh<_i219.DeleteTransactionUseCase>(),
+        ));
+    gh.factory<_i180.ReportsCubit>(
+        () => _i180.ReportsCubit(gh<_i161.GetReportSummaryUseCase>()));
     gh.factory<_i621.AddTransactionCubit>(() => _i621.AddTransactionCubit(
           gh<_i198.CreateTransactionUseCase>(),
           gh<_i268.GetCategoriesUseCase>(),

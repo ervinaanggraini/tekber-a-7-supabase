@@ -7,6 +7,7 @@ abstract class TransactionRemoteDataSource {
   Future<List<TransactionModel>> getRecentTransactions({int limit = 10});
   Future<Map<String, double>> getCashflowData({DateTime? month});
   Future<TransactionModel> createTransaction(TransactionModel transaction);
+  Future<TransactionModel> updateTransaction(TransactionModel transaction);
   Future<void> deleteTransaction(String transactionId);
   Future<List<CategoryModel>> getCategories({String? type});
 }
@@ -105,6 +106,31 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
       return TransactionModel.fromJson(response);
     } catch (e) {
       throw Exception('Failed to create transaction: $e');
+    }
+  }
+
+  @override
+  Future<TransactionModel> updateTransaction(TransactionModel transaction) async {
+    try {
+      final userId = supabaseClient.auth.currentUser?.id;
+      if (userId == null) {
+        throw Exception('User not authenticated');
+      }
+
+      final data = transaction.toJson();
+      data.remove('created_at'); // Don't update created_at
+
+      final response = await supabaseClient
+          .from('transactions')
+          .update(data)
+          .eq('id', transaction.id)
+          .eq('user_id', userId)
+          .select('*, category:categories(*)')
+          .single();
+
+      return TransactionModel.fromJson(response);
+    } catch (e) {
+      throw Exception('Failed to update transaction: $e');
     }
   }
 

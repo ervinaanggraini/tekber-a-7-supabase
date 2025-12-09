@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:injectable/injectable.dart';
+import 'dart:io';
 import '../../domain/entities/chat_conversation.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/repositories/chat_repository.dart';
@@ -53,18 +54,19 @@ class ChatCubit extends Cubit<ChatState> {
     }
   }
 
-  Future<void> sendMessage(String message) async {
+  Future<void> sendMessage(String message, {File? imageFile}) async {
     final currentState = state;
     if (currentState is! ChatConversationActive) return;
 
     try {
-      // Create optimistic user message (show immediately)
+      // Create optimistic user message (show immediately with image preview)
       final optimisticMessage = ChatMessage(
         id: 'temp-${DateTime.now().millisecondsSinceEpoch}',
         conversationId: currentState.conversation.id,
         role: 'user',
         content: message,
         createdAt: DateTime.now(),
+        imageUrl: imageFile != null ? 'loading' : null, // Temporary marker for loading image
       );
 
       // Update UI with user message immediately + set sending state
@@ -77,6 +79,7 @@ class ChatCubit extends Cubit<ChatState> {
       await repository.sendMessage(
         conversationId: currentState.conversation.id,
         message: message,
+        imageFile: imageFile,
       );
 
       // Reload messages with actual data from server

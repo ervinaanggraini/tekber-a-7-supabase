@@ -60,6 +60,27 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }
 
   @override
+  Future<Transaction> updateTransaction(Transaction transaction) async {
+    final model = TransactionModel(
+      id: transaction.id,
+      userId: transaction.userId,
+      category: transaction.category,
+      type: transaction.type,
+      amount: transaction.amount,
+      description: transaction.description,
+      notes: transaction.notes,
+      transactionDate: transaction.transactionDate,
+      transactionTime: transaction.transactionTime,
+      inputMethod: transaction.inputMethod,
+      receiptImageUrl: transaction.receiptImageUrl,
+      merchantName: transaction.merchantName,
+      createdAt: transaction.createdAt,
+    );
+    
+    return await remoteDataSource.updateTransaction(model);
+  }
+
+  @override
   Future<void> deleteTransaction(String transactionId) async {
     return await remoteDataSource.deleteTransaction(transactionId);
   }
