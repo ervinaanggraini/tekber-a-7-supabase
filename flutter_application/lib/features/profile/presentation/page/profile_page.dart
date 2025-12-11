@@ -9,7 +9,7 @@ import 'package:flutter_application/core/constants/urls.dart';
 import 'package:flutter_application/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:flutter_application/features/theme_mode/presentation/widget/theme_mode_settings_tile.dart';
 import 'package:flutter_application/features/profile/presentation/page/notification_settings_page.dart';
-
+//
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
 
