@@ -8,6 +8,8 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter_application/core/app/app.dart';
 import 'package:flutter_application/dependency_injection.dart';
 
+import 'package:flutter_application/features/notification/services/notification_services.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -16,6 +18,8 @@ void main() async {
   await _initializeHive();
   await initializeDateFormatting('id_ID', null);
   configureDependencyInjection();
+
+  await NotificationService().init();
 
   runApp(
     const FlutterSupabaseStarterApp(),

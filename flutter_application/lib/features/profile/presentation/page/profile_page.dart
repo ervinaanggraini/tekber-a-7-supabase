@@ -8,6 +8,7 @@ import 'package:flutter_application/core/constants/spacings.dart';
 import 'package:flutter_application/core/constants/urls.dart';
 import 'package:flutter_application/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:flutter_application/features/theme_mode/presentation/widget/theme_mode_settings_tile.dart';
+import 'package:flutter_application/features/profile/presentation/page/notification_settings_page.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({super.key});
@@ -186,21 +187,21 @@ class _ProfilePageState extends State<ProfilePage> {
                   const Divider(height: 1),
                   const ThemeModeSettingsTile(),
                   // const Divider(height: 1),
-                  // _ProfileMenuItem(
-                  //   icon: Icons.email_outlined,
-                  //   title: 'Change Email',
-                  //   onTap: () {
-                  //     ScaffoldMessenger.of(context).showSnackBar(
-                  //       SnackBar(
-                  //         content: Text(
-                  //           'Fitur Change Email sedang dalam pengembangan',
-                  //           style: GoogleFonts.poppins(),
-                  //         ),
-                  //         behavior: SnackBarBehavior.floating,
-                  //       ),
-                  //     );
-                  //   },
-                  // ),
+                  _ProfileMenuItem(
+                     icon: Icons.email_outlined,
+                     title: 'Change Email',
+                     onTap: () {
+                       ScaffoldMessenger.of(context).showSnackBar(
+                         SnackBar(
+                           content: Text(
+                             'Fitur Change Email sedang dalam pengembangan',
+                             style: GoogleFonts.poppins(),
+                           ),
+                           behavior: SnackBarBehavior.floating,
+                         ),
+                       );
+                     },
+                   ),
                   // const Divider(height: 1),
                   // _ProfileMenuItem(
                   //   icon: Icons.forward_to_inbox,
