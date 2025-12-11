@@ -181,9 +181,11 @@ Silakan berkontribusi dengan cara:
 
 | Nama | NRP |
 |------|-----|
+| Batara Haryo Yudanto | 5026231008 |
 | Azzahra Amalia Arfin | 5026231027 |
 | Antika Raya | 5026231034 |
 | Ervina Anggraini | 5026231042 |
+| Batara Haryo Yudanto | 5026231008 |
 | Nisrina Kamiliya Riswanto | 5026231111 |
 | Realasa Femmi Novelika | 5026231113 |
 
