@@ -7,6 +7,7 @@ import '../../../../dependency_injection.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../cubit/reports_cubit.dart';
 import '../utils/report_pdf_generator.dart';
+import '../utils/report_export_generator.dart';
 
 class ReportsPage extends StatelessWidget {
   const ReportsPage({super.key});
@@ -311,11 +312,43 @@ class _ReportsPageView extends StatelessWidget {
                         periodLabel = 'Tahun Ini';
                         break;
                     }
-                    await ReportPdfGenerator.generateAndSharePdf(summary, periodLabel);
+
+                    // Show chooser for PDF or Excel
+                    final choice = await showModalBottomSheet<String?>(
+                      context: context,
+                      builder: (ctx) => SafeArea(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              leading: const Icon(Icons.picture_as_pdf),
+                              title: const Text('PDF'),
+                              onTap: () => Navigator.of(ctx).pop('pdf'),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.table_chart),
+                              title: const Text('Excel'),
+                              onTap: () => Navigator.of(ctx).pop('excel'),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.close),
+                              title: const Text('Batal'),
+                              onTap: () => Navigator.of(ctx).pop(null),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+
+                    if (choice == 'pdf') {
+                      await ReportPdfGenerator.generateAndSharePdf(summary, periodLabel);
+                    } else if (choice == 'excel') {
+                      await ReportExportGenerator.generateAndShareExcel(summary, periodLabel);
+                    }
                   },
-                  icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+                  icon: const Icon(Icons.file_upload, color: Colors.white),
                   label: Text(
-                    'Export ke PDF',
+                    'Export Laporan',
                     style: GoogleFonts.poppins(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

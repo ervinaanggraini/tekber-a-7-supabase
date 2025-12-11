@@ -89,9 +89,17 @@ class SupabaseAuthRepository implements AuthRepository {
 
   @override
   Stream<AuthState> getCurrentAuthState() {
-    return _supabaseAuth.onAuthStateChange.map(
-      (authState) => authState,
-    );
+    return _supabaseAuth.onAuthStateChange.asyncMap((authState) async {
+      try {
+        final user = authState.session?.user;
+        if (user != null) {
+          await _createUserProfile(user);
+        }
+      } catch (e) {
+        debugPrint('Ensure profile on auth state change error: $e');
+      }
+      return authState;
+    });
   }
 
   @override
