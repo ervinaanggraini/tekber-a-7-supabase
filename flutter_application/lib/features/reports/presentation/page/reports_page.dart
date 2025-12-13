@@ -8,6 +8,7 @@ import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../cubit/reports_cubit.dart';
 import '../utils/report_pdf_generator.dart';
 import '../utils/report_export_generator.dart';
+import '../utils/export_dialog.dart';
 
 class ReportsPage extends StatelessWidget {
   const ReportsPage({super.key});
@@ -341,17 +342,18 @@ class _ReportsPageView extends StatelessWidget {
                     );
 
                     if (choice == 'pdf') {
-                      await ReportPdfGenerator.generateAndSharePdf(summary, periodLabel);
+                      try {
+                        await ReportPdfGenerator.generateAndSharePdf(summary, periodLabel);
+                        await showExportSuccessDialog(context, 'PDF');
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengunduh file PDF: $e')));
+                      }
                     } else if (choice == 'excel') {
                       try {
                         await ReportExportGenerator.generateAndShareExcel(summary, periodLabel);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Berhasil mengunduh file Excel')),
-                        );
+                        await showExportSuccessDialog(context, 'Excel');
                       } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Gagal mengunduh file Excel: $e')),
-                        );
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengunduh file Excel: $e')));
                       }
                     }
                   },
