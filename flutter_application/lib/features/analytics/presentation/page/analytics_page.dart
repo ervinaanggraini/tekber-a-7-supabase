@@ -8,6 +8,9 @@ import '../../../../dependency_injection.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
 import '../../domain/entities/analytics_summary.dart';
 import '../cubit/analytics_cubit.dart';
+import '../utils/analytics_export_generator.dart';
+import '../utils/analytics_pdf_generator.dart';
+import '../../../reports/presentation/utils/export_dialog.dart';
 
 class AnalyticsPage extends StatelessWidget {
   const AnalyticsPage({super.key});
@@ -464,13 +467,79 @@ class _AnalyticsPageView extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: Spacing.s24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () async {
+                    final periodLabel = DateTime.now().toString().split(' ')[0];
+                    final choice = await showModalBottomSheet<String?>(
+                      context: context,
+                      builder: (ctx) => SafeArea(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            ListTile(
+                              leading: const Icon(Icons.picture_as_pdf),
+                              title: const Text('PDF'),
+                              onTap: () => Navigator.of(ctx).pop('pdf'),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.table_chart),
+                              title: const Text('Excel'),
+                              onTap: () => Navigator.of(ctx).pop('excel'),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.close),
+                              title: const Text('Batal'),
+                              onTap: () => Navigator.of(ctx).pop(null),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+
+                    if (choice == 'pdf') {
+                      try {
+                        await AnalyticsPdfGenerator.generateAndSharePdf(summary, periodLabel);
+                        await showExportSuccessDialog(context, 'PDF');
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengunduh file PDF: $e')));
+                      }
+                    } else if (choice == 'excel') {
+                      try {
+                        await AnalyticsExportGenerator.generateAndShareExcel(summary, periodLabel);
+                        await showExportSuccessDialog(context, 'Excel');
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengunduh file Excel: $e')));
+                      }
+                    }
+                  },
+                  icon: const Icon(Icons.file_upload, color: Colors.white),
+                  label: Text(
+                    'Export Analisis',
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.b93160,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    elevation: 4,
+                    shadowColor: AppColors.b93160.withOpacity(0.4),
+                  ),
+                ),
+              ),
             ],
           ),
         );
-          },
-        ),
-      ),
-    );
+      },
+    ),
+  ),
+);
   }
 }
 
