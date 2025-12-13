@@ -343,7 +343,16 @@ class _ReportsPageView extends StatelessWidget {
                     if (choice == 'pdf') {
                       await ReportPdfGenerator.generateAndSharePdf(summary, periodLabel);
                     } else if (choice == 'excel') {
-                      await ReportExportGenerator.generateAndShareExcel(summary, periodLabel);
+                      try {
+                        await ReportExportGenerator.generateAndShareExcel(summary, periodLabel);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Berhasil mengunduh file Excel')),
+                        );
+                      } catch (e) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Gagal mengunduh file Excel: $e')),
+                        );
+                      }
                     }
                   },
                   icon: const Icon(Icons.file_upload, color: Colors.white),

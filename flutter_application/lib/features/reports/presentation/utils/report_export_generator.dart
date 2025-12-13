@@ -1,10 +1,7 @@
-import 'dart:io';
 import 'dart:typed_data';
-import 'package:cross_file/cross_file.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:excel/excel.dart';
 import '../../domain/entities/report_summary.dart';
+import 'report_export_helper.dart';
 
 class ReportExportGenerator {
   /// Generate a real .xlsx file from [summary] and share it.
@@ -35,7 +32,7 @@ class ReportExportGenerator {
 
     for (final c in categories) {
       final name = c.categoryName;
-      sheet.appendRow([name, c.amount.toString(), '${c.percentage.toStringAsFixed(1)}%']);
+      sheet.appendRow([name, c.amount.toString(), '${c.percentage}%']);
     }
 
     // Encode to bytes
@@ -44,12 +41,8 @@ class ReportExportGenerator {
       throw Exception('Failed to generate Excel file');
     }
 
-    final tempDir = await getTemporaryDirectory();
     final fileName = 'laporan_keuangan_${periodLabel.replaceAll(' ', '_')}.xlsx';
-    final file = File('${tempDir.path}/$fileName');
-    await file.writeAsBytes(fileBytes, flush: true);
-
-    // Share file
-    await Share.shareXFiles([XFile(file.path)], text: 'Laporan Keuangan - $periodLabel');
+    final bytes = Uint8List.fromList(fileBytes);
+    await exportExcelBytes(bytes, fileName);
   }
 }
