@@ -7,6 +7,9 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/spacings.dart';
 import '../../../../dependency_injection.dart';
 import '../../../auth/presentation/bloc/auth_bloc.dart';
+import '../utils/transaction_export_generator.dart';
+import '../utils/transaction_pdf_generator.dart';
+import '../../../reports/presentation/utils/export_dialog.dart';
 import '../../domain/entities/transaction.dart';
 import '../bloc/transaction_bloc.dart';
 import 'add_transaction_page.dart';
@@ -164,39 +167,122 @@ class _TransactionHistoryViewState extends State<_TransactionHistoryView> {
                   final sortedDates = groupedTransactions.keys.toList()
                     ..sort((a, b) => b.compareTo(a));
 
-                  return RefreshIndicator(
-                    onRefresh: () async => _loadTransactions(),
-                    child: ListView.builder(
-                      padding: const EdgeInsets.all(Spacing.s16),
-                      itemCount: sortedDates.length,
-                      itemBuilder: (context, index) {
-                        final dateKey = sortedDates[index];
-                        final transactions = groupedTransactions[dateKey]!;
-                        final date = DateTime.parse(dateKey);
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 8),
-                              child: Text(
-                                _formatDateHeader(date),
-                                style: GoogleFonts.poppins(
-                                  fontSize: 14.sp,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.b93160,
+                  return Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: Spacing.s16, vertical: 8),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              // Choose period first
+                              final period = await showModalBottomSheet<String?>(
+                                context: context,
+                                builder: (ctx) => SafeArea(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ListTile(leading: const Icon(Icons.calendar_view_week), title: const Text('Mingguan'), onTap: () => Navigator.of(ctx).pop('week')),
+                                      ListTile(leading: const Icon(Icons.calendar_view_month), title: const Text('Bulanan'), onTap: () => Navigator.of(ctx).pop('month')),
+                                      ListTile(leading: const Icon(Icons.calendar_today), title: const Text('Tahunan'), onTap: () => Navigator.of(ctx).pop('year')),
+                                      ListTile(leading: const Icon(Icons.close), title: const Text('Batal'), onTap: () => Navigator.of(ctx).pop(null)),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ),
-                            ...transactions.map((transaction) {
-                              return _buildTransactionCard(transaction, isDark);
-                            }).toList(),
-                            SizedBox(height: 8.h),
-                          ],
-                        );
-                      },
-                    ),
+                              );
+
+                              if (period == null) return; // cancelled
+
+                              if (!mounted) return;
+
+                              // Now choose pdf or excel
+                              final choice = await showModalBottomSheet<String?>(
+                                context: context,
+                                builder: (ctx) => SafeArea(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      ListTile(leading: const Icon(Icons.picture_as_pdf), title: const Text('PDF'), onTap: () => Navigator.of(ctx).pop('pdf')),
+                                      ListTile(leading: const Icon(Icons.table_chart), title: const Text('Excel'), onTap: () => Navigator.of(ctx).pop('excel')),
+                                      ListTile(leading: const Icon(Icons.close), title: const Text('Batal'), onTap: () => Navigator.of(ctx).pop(null)),
+                                    ],
+                                  ),
+                                ),
+                              );
+
+                              if (choice == null) return;
+
+                              if (!mounted) return;
+
+                              // Compute date range
+                              final now = DateTime.now();
+                              late DateTime startDate;
+                              late DateTime endDate;
+                              String periodLabel = '';
+                              endDate = DateTime(now.year, now.month, now.day, 23, 59, 59);
+                              if (period == 'week') {
+                                startDate = now.subtract(const Duration(days: 7));
+                                periodLabel = 'Minggu_terakhir';
+                              } else if (period == 'month') {
+                                startDate = DateTime(now.year, now.month, 1);
+                                periodLabel = DateFormat('MMMM_yyyy', 'id_ID').format(now);
+                              } else if (period == 'year') {
+                                startDate = DateTime(now.year, 1, 1);
+                                periodLabel = 'Tahun_${now.year}';
+                              }
+
+                              // Filter transactions by range
+                              final selection = state.transactions.where((tx) =>
+                                !tx.date.isBefore(startDate) && !tx.date.isAfter(endDate)
+                              ).toList();
+
+                              try {
+                                if (choice == 'pdf') {
+                                  await TransactionPdfGenerator.generateAndSharePdf(selection, startDate, endDate, periodLabel);
+                                  await showExportSuccessDialog(context, 'PDF');
+                                } else if (choice == 'excel') {
+                                  await TransactionExportGenerator.generateAndShareExcel(selection, startDate, endDate, periodLabel);
+                                  await showExportSuccessDialog(context, 'Excel');
+                                }
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengunduh file: $e')));
+                              }
+                            },
+                            icon: const Icon(Icons.file_upload, color: Colors.white),
+                            label: Text('Export Riwayat', style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
+                            style: ElevatedButton.styleFrom(backgroundColor: AppColors.b93160, padding: const EdgeInsets.symmetric(vertical: 12)),
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: () async => _loadTransactions(),
+                          child: ListView.builder(
+                            padding: const EdgeInsets.all(Spacing.s16),
+                            itemCount: sortedDates.length,
+                            itemBuilder: (context, index) {
+                              final dateKey = sortedDates[index];
+                              final transactions = groupedTransactions[dateKey]!;
+                              final date = DateTime.parse(dateKey);
+
+                              return Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    child: Text(_formatDateHeader(date), style: GoogleFonts.poppins(fontSize: 14.sp, fontWeight: FontWeight.bold, color: AppColors.b93160)),
+                                  ),
+                                  ...transactions.map((transaction) => _buildTransactionCard(transaction, isDark)).toList(),
+                                  SizedBox(height: 8.h),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
                   );
+                
                 }
 
                 return const SizedBox();
