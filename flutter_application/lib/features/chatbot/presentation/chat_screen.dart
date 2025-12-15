@@ -862,6 +862,61 @@ class _ChatBubble extends StatelessWidget {
                         color: isUser ? Colors.white : (isDark ? Colors.white : AppColors.b93160),
                       ),
                     ),
+                  // If this assistant message is a confirmation request, show quick actions
+                  if (!isUser && message.intent == 'confirm_transaction') ...[
+                    SizedBox(height: 8.h),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextButton(
+                          onPressed: () {
+                            // send quick 'ya' message
+                            final cubit = context.read<ChatCubit>();
+                            cubit.sendMessage('ya');
+                          },
+                          child: Text('Ya'),
+                        ),
+                        SizedBox(width: 8.w),
+                        TextButton(
+                          onPressed: () {
+                            final cubit = context.read<ChatCubit>();
+                            cubit.sendMessage('tidak');
+                          },
+                          child: Text('Tidak'),
+                        ),
+                      ],
+                    ),
+                  ],
+                  if (message.transactionId != null) SizedBox(height: 8.h),
+                  if (message.transactionId != null)
+                    GestureDetector(
+                      onTap: () {
+                        // For now, just show simple snackbar with transaction info
+                        final amt = message.extractedData != null ? message.extractedData!['amount'] : null;
+                        final desc = message.extractedData != null ? message.extractedData!['description'] : null;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('Transaksi dicatat: ${desc ?? ''} ${amt != null ? ' - Rp${amt.toInt()}' : ''}')),
+                        );
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+                        decoration: BoxDecoration(
+                          color: isUser ? Colors.white.withOpacity(0.08) : (isDark ? Colors.grey[800] : AppColors.f4e8da),
+                          borderRadius: BorderRadius.circular(8.r),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.receipt_long, size: 14.sp, color: isUser ? Colors.white : AppColors.b93160),
+                            SizedBox(width: 6.w),
+                            Text(
+                              'Transaksi dicatat',
+                              style: TextStyle(fontSize: 12.sp, color: isUser ? Colors.white : AppColors.b93160),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                 ],
               ),
             ),

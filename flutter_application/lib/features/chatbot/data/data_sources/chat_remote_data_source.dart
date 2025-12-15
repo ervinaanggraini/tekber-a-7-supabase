@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/chat_conversation.dart';
+import '../utils/transaction_parser.dart';
 import '../models/chat_conversation_model.dart';
 import '../models/chat_message_model.dart';
 
@@ -33,6 +34,14 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     return (response as List)
         .map((json) => ChatConversationModel.fromJson(json))
         .toList();
+  }
+
+  bool _isAffirmative(String text) {
+    return isAffirmativeText(text);
+  }
+
+  bool _isNegative(String text) {
+    return isNegativeText(text);
   }
 
   @override
@@ -117,6 +126,153 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       }
     }
     
+    // Parse message for potential transaction (but do NOT auto-save)
+    Map<String, dynamic>? parsedTransaction;
+    try {
+      parsedTransaction = parseTransactionFromText(message);
+      if (parsedTransaction != null) {
+        print('🔍 Parsed potential transaction: $parsedTransaction');
+      }
+    } catch (e) {
+      print('⚠️ Transaction parsing failed: $e');
+    }
+
+    // Insert user message immediately to keep DB consistent
+    Map<String, dynamic>? insertedUserMessage;
+    try {
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) throw Exception('User not authenticated');
+
+      final userMsg = {
+        'conversation_id': conversationId,
+        'role': 'user',
+        'content': message,
+        if (imageUrl != null) 'image_url': imageUrl,
+        if (parsedTransaction != null) 'extracted_data': parsedTransaction,
+      };
+
+      insertedUserMessage = await supabase.from('chat_messages').insert(userMsg).select().single();
+      print('✅ User message saved: ${insertedUserMessage['id']}');
+    } catch (e) {
+      print('❌ Failed to save user message early: $e');
+    }
+
+    // If there's a pending confirmation, interpret this message as response
+    try {
+        // Fetch the most recent assistant confirmation message specifically
+        final lastAssistant = await supabase
+          .from('chat_messages')
+          .select()
+          .eq('conversation_id', conversationId)
+          .eq('role', 'assistant')
+          .eq('intent', 'confirm_transaction')
+          .order('created_at', ascending: false)
+          .limit(1)
+          .maybeSingle();
+
+      if (lastAssistant != null && lastAssistant['role'] == 'assistant' && lastAssistant['intent'] == 'confirm_transaction') {
+        final isAffirmative = isAffirmativeText(message);
+        final isNegative = isNegativeText(message);
+
+        if (isAffirmative) {
+          final data = lastAssistant['extracted_data'] as Map<String, dynamic>?;
+          if (data != null) {
+            final created = await _createTransactionFromParsed(data);
+              if (created != null) {
+                final createdType = (data['type'] as String?) ?? 'expense';
+                final humanType = createdType == 'income' ? 'Pemasukan' : 'Pengeluaran';
+              // update user message to attach transaction_id
+              if (insertedUserMessage != null) {
+                await supabase.from('chat_messages').update({
+                  'intent': 'record_transaction',
+                  'transaction_id': created['id'],
+                }).eq('id', insertedUserMessage['id']);
+              }
+
+              // update assistant confirm message to reflect saved transaction
+              await supabase.from('chat_messages').update({
+                'content': '✅ $humanType dicatat: ${created['description'] ?? ''} - Rp${(created['amount'] as num).toInt()}',
+                'transaction_id': created['id'],
+              }).eq('id', lastAssistant['id']);
+
+              // also insert a short assistant reply for clarity
+              await supabase.from('chat_messages').insert({
+                'conversation_id': conversationId,
+                'role': 'assistant',
+                'content': 'Transaksi telah disimpan.',
+                'persona': lastAssistant['persona'],
+                'transaction_id': created['id'],
+              });
+
+              // Update conversation last_message_at
+              await supabase
+                  .from('chat_conversations')
+                  .update({'last_message_at': DateTime.now().toIso8601String()})
+                  .eq('id', conversationId);
+
+              await Future.delayed(const Duration(milliseconds: 300));
+              final messages = await getMessages(conversationId);
+              return messages.last;
+            }
+          }
+        }
+
+        if (isNegative) {
+          await supabase.from('chat_messages').update({
+            'content': 'Baik, saya batal mencatat transaksi tersebut.',
+          }).eq('id', lastAssistant['id']);
+
+          await supabase
+              .from('chat_conversations')
+              .update({'last_message_at': DateTime.now().toIso8601String()})
+              .eq('id', conversationId);
+
+          await Future.delayed(const Duration(milliseconds: 300));
+          final messages = await getMessages(conversationId);
+          return messages.last;
+        }
+      }
+    } catch (e) {
+      print('⚠️ Error while handling confirmation response: $e');
+    }
+
+    // If parsing detected a potential transaction and there's no pending confirmation, ask for confirmation
+    if (parsedTransaction != null) {
+      try {
+        final conversation = await supabase
+            .from('chat_conversations')
+            .select('persona')
+            .eq('id', conversationId)
+            .single();
+
+        final persona = conversation['persona'] as String?;
+
+        final detectedType = parsedTransaction['type'] as String? ?? 'expense';
+        final humanType = detectedType == 'income' ? 'pemasukan' : 'pengeluaran';
+        final confirmationText = 'Saya mendeteksi $humanType: ${parsedTransaction['description'] ?? ''} Rp${(parsedTransaction['amount'] as num).toInt()}. Apakah ingin saya catat? (Ya/Tidak)';
+
+        await supabase.from('chat_messages').insert({
+          'conversation_id': conversationId,
+          'role': 'assistant',
+          'content': confirmationText,
+          'persona': persona,
+          'intent': 'confirm_transaction',
+          'extracted_data': parsedTransaction,
+        });
+
+        await supabase
+            .from('chat_conversations')
+            .update({'last_message_at': DateTime.now().toIso8601String()})
+            .eq('id', conversationId);
+
+        await Future.delayed(const Duration(milliseconds: 300));
+        final messages = await getMessages(conversationId);
+        return messages.last;
+      } catch (e) {
+        print('❌ Failed to insert confirmation message: $e');
+      }
+    }
+
     try {
       // Call Edge Function with retry logic
       print('🚀 Calling Edge Function...');
@@ -124,8 +280,8 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         'ai-chat',
         body: {
           'conversationId': conversationId,
-          'message': message,
-          if (imageUrl != null) 'imageUrl': imageUrl,
+            'message': message,
+            if (imageUrl != null) 'imageUrl': imageUrl,
         },
       );
 
@@ -171,14 +327,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         
         final persona = conversation['persona'] as String?;
         
-        // Save user message
-        await supabase.from('chat_messages').insert({
-          'conversation_id': conversationId,
-          'role': 'user',
-          'content': message,
-          if (imageUrl != null) 'image_url': imageUrl,
-        });
-        print('✅ User message saved (fallback)');
+          // Previously we inserted the user message early — don't duplicate here.
 
         // Generate response based on persona
         String aiResponse;
@@ -206,6 +355,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
           'role': 'assistant',
           'content': aiResponse,
           'persona': persona,
+          // no transaction id here — only set after user confirms
         });
         print('✅ AI response saved (fallback)');
         
@@ -240,5 +390,74 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
     await supabase
         .from('chat_conversations')
         .update({'is_archived': archived}).eq('id', conversationId);
+  }
+
+  Future<Map<String, dynamic>?> _detectAndCreateTransactionIfAny(String message) async {
+    // Deprecated: creation now handled in _createTransactionFromParsed when confirmed
+    return null;
+  }
+
+  Future<Map<String, dynamic>?> _createTransactionFromParsed(Map<String, dynamic> parsed) async {
+    try {
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) return null;
+
+      final parsedType = (parsed['type'] as String?) ?? 'expense';
+      final categoryId = await _findCategoryId(parsed['description'] as String?, parsedType);
+
+      final insertData = {
+        'user_id': userId,
+        'category_id': categoryId,
+        'type': parsedType,
+        'amount': parsed['amount'],
+        'description': parsed['description'],
+        'merchant_name': parsed['merchant'],
+        'transaction_date': DateTime.now().toIso8601String(),
+        'input_method': 'ai_chat',
+      };
+
+      final response = await supabase.from('transactions').insert(insertData).select().single();
+      if (response == null) return null;
+
+      return {
+        'id': response['id'],
+        'amount': parsed['amount'],
+        'description': parsed['description'],
+        'merchant': parsed['merchant'],
+        'category_id': categoryId,
+      };
+    } catch (e) {
+      print('❌ Error creating transaction: $e');
+      return null;
+    }
+  }
+
+  
+
+  Future<String?> _findCategoryId(String? description, String type) async {
+    try {
+      if (description != null) {
+        final keywords = ['makanan', 'makan', 'minum', 'makanan & minuman', 'belanja', 'transport'];
+        final lower = description.toLowerCase();
+        for (final kw in keywords) {
+          if (lower.contains(kw)) {
+            final resp = await supabase
+                .from('categories')
+                .select()
+                .ilike('name', '%$kw%')
+                .eq('type', type)
+                .maybeSingle();
+            if (resp != null && resp['id'] != null) return resp['id'] as String;
+          }
+        }
+      }
+
+      // Fallback: first category of requested type
+      final first = await supabase.from('categories').select().eq('type', type).limit(1).maybeSingle();
+      if (first != null && first['id'] != null) return first['id'] as String;
+    } catch (e) {
+      print('❌ Error finding category: $e');
+    }
+    return null;
   }
 }
