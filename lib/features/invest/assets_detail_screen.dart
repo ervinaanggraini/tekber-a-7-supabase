@@ -52,7 +52,7 @@ class AssetDetailScreen extends StatelessWidget {
             color: AppColors.textLight,
             size: 20.sp,
           ),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SingleChildScrollView(

@@ -9,6 +9,8 @@ import 'package:moneyvesto/core/utils/route_utils.dart';
 import 'package:moneyvesto/core/utils/shared_preferences_utils.dart';
 import 'package:moneyvesto/data/auth_datasource.dart';
 
+import 'package:moneyvesto/core/services/notification_service.dart';
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -20,11 +22,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // Instance dari data source untuk interaksi data
   final AuthDataSource _authDataSource = AuthDataSourceImpl();
   final SharedPreferencesUtils _prefsUtils = SharedPreferencesUtils();
+  final NotificationService _notificationService = NotificationService();
 
   // State untuk menyimpan data pengguna dan status UI
   Map<String, dynamic>? _userData;
   bool _isLoading = true;
   bool isEditing = false;
+  bool _notificationsEnabled = false;
 
   // Controller untuk field teks
   late TextEditingController emailController;
@@ -35,6 +39,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     super.initState();
     emailController = TextEditingController();
     phoneController = TextEditingController();
+    _notificationService.init();
     // Panggil fungsi untuk memuat data saat layar pertama kali dibangun
     _loadUserData();
   }
@@ -58,6 +63,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           // Isi controller dengan data yang ada, atau string kosong jika null
           emailController.text = _userData?['email'] ?? '';
           phoneController.text = _userData?['phone'] ?? '';
+          // Load notification setting (mock)
+          _notificationsEnabled = _userData?['notifications_enabled'] ?? false;
         });
       }
     } catch (e) {
@@ -79,6 +86,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     }
   }
+
+  void _toggleNotifications(bool value) {
+    setState(() {
+      _notificationsEnabled = value;
+    });
+    if (value) {
+      _notificationService.scheduleDailyNotification(
+        id: 1,
+        title: "Jangan lupa catat keuanganmu!",
+        body: "Sudahkah kamu mencatat pengeluaran hari ini?",
+        hour: 20,
+        minute: 0,
+      );
+      Get.snackbar("Notifikasi", "Pengingat harian diaktifkan (20:00)");
+    } else {
+      _notificationService.flutterLocalNotificationsPlugin.cancel(1);
+      Get.snackbar("Notifikasi", "Pengingat harian dinonaktifkan");
+    }
+  }
+
 
   /// Menangani logika saat tombol 'Edit' atau 'Save' ditekan.
   void onEditPressed() {
@@ -194,7 +221,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: AppColors.textLight,
             size: 20.sp,
           ),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.pop(context),
         ),
         actions: [
           Padding(
@@ -278,6 +305,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       keyboardType: TextInputType.phone,
                       enabled: isEditing,
                     ),
+                    SizedBox(height: 24.h),
+                    _buildNotificationSwitch(),
                     const Spacer(),
                     GlobalButton(
                       onPressed: onLogoutPressed,
@@ -291,6 +320,33 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
               ),
+    );
+  }
+
+  Widget _buildNotificationSwitch() {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        color: AppColors.secondaryAccent,
+        borderRadius: BorderRadius.circular(12.r),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.notifications_active, color: AppColors.primaryAccent, size: 24.sp),
+              SizedBox(width: 12.w),
+              GlobalText.medium("Notifikasi Harian", fontSize: 14.sp, color: AppColors.textLight),
+            ],
+          ),
+          Switch(
+            value: _notificationsEnabled,
+            onChanged: isEditing ? _toggleNotifications : null,
+            activeColor: AppColors.primaryAccent,
+          ),
+        ],
+      ),
     );
   }
 }

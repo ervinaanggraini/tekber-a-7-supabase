@@ -18,6 +18,14 @@ class ForgotPasswordScreen extends StatelessWidget {
       backgroundColor:
           AppColors
               .background, // Menggunakan warna latar belakang dari AppColors
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textLight),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 24.w),
@@ -70,7 +78,7 @@ class ForgotPasswordScreen extends StatelessWidget {
               Center(
                 child: TextButton(
                   onPressed: () {
-                    Get.back(); // Kembali ke halaman sebelumnya (LoginScreen)
+                    Navigator.pop(context); // Kembali ke halaman sebelumnya (LoginScreen)
                   },
                   child: GlobalText.regular(
                     'Back to Sign In',

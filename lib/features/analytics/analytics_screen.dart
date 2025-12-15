@@ -4,10 +4,14 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'dart:math';
 
+import 'package:get/get.dart';
+
 // --- SESUAIKAN PATH IMPOR INI ---
 import 'package:moneyvesto/core/constants/color.dart';
 import 'package:moneyvesto/core/global_components/global_text.dart';
 import 'package:moneyvesto/data/transaction_datasource.dart';
+
+import 'package:moneyvesto/features/analytics/financial_insights_screen.dart';
 
 class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
@@ -99,6 +103,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
     }
   }
 
+
+
   void _filterData(int tabIndex) {
     // ---- MENGGUNAKAN WAKTU SEBENARNYA (DINAMIS) ----
     final now = DateTime.now();
@@ -171,8 +177,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen>
             color: AppColors.textLight,
             size: 20.sp,
           ),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.lightbulb_outline, color: AppColors.primaryAccent),
+            onPressed: () => Get.to(() => const FinancialInsightsScreen()),
+          ),
+        ],
         backgroundColor: AppColors.background,
         elevation: 0,
         centerTitle: true,

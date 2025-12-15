@@ -1,8 +1,8 @@
 // file: lib/data/auth_datasource.dart
 
 import 'package:dio/dio.dart';
-import 'package:moneyvesto/core/services/DioService.dart';
-import 'package:moneyvesto/core/services/Endpoints.dart';
+import 'package:moneyvesto/core/services/dio_service.dart';
+import 'package:moneyvesto/core/services/endpoints.dart';
 // Import utility class Anda
 import 'package:moneyvesto/core/utils/shared_preferences_utils.dart';
 

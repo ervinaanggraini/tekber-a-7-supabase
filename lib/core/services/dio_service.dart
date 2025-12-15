@@ -5,7 +5,7 @@ import 'package:dio/dio.dart';
 // import 'package:shared_preferences/shared_preferences.dart';
 // --- DENGAN IMPORT UTILS ANDA ---
 import 'package:moneyvesto/core/utils/shared_preferences_utils.dart'; // Sesuaikan path jika perlu
-import 'package:moneyvesto/core/services/Endpoints.dart';
+import 'package:moneyvesto/core/services/endpoints.dart';
 
 class DioService {
   // Singleton pattern

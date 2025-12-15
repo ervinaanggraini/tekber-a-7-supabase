@@ -12,6 +12,8 @@ import 'package:moneyvesto/features/profile/profile_screen.dart';
 import 'package:moneyvesto/features/reports/finance_report_screen.dart';
 import 'package:moneyvesto/features/signup/signup_screen.dart';
 import 'package:moneyvesto/features/splash/splash_screen.dart';
+import 'package:moneyvesto/features/budget/budget_screen.dart';
+import 'package:moneyvesto/features/gamification/gamification_screen.dart';
 
 class NavigationRoutes {
   static String initial = '/';
@@ -27,6 +29,8 @@ class NavigationRoutes {
   static String invest = '/invest';
   static String news = '/news';
   static String analytics = '/analytics'; // Optional, if you have a settings screen
+  static String budget = '/budget';
+  static String gamification = '/gamification';
 
   static List<GetPage> routes = [
     GetPage(name: initial, page: () => SplashScreen()),
@@ -42,5 +46,7 @@ class NavigationRoutes {
     GetPage(name: invest, page: () => const EducationAndSimulationScreen()),
     GetPage(name: news, page: () => const NewsScreen()),
     GetPage(name: analytics, page: () => const AnalyticsScreen()), // Uncomment if you have a settings screen
+    GetPage(name: budget, page: () => const BudgetScreen()),
+    GetPage(name: gamification, page: () => const GamificationScreen()),
   ];
 }

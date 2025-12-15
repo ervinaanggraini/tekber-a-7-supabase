@@ -194,7 +194,7 @@ class _NewsScreenState extends State<NewsScreen> {
             color: AppColors.textLight,
             size: 20.sp,
           ),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: NestedScrollView(
@@ -353,14 +353,14 @@ class _NewsScreenState extends State<NewsScreen> {
             ),
             SizedBox(width: 12.w),
             Expanded(
-              child: SizedBox(
-                height: 110.h,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: 110.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Padding(
-                      padding: EdgeInsets.only(top: 8.h),
+                      padding: EdgeInsets.only(top: 4.h),
                       child: GlobalText.regular(
                         article.sourceName.toUpperCase(),
                         textAlign: TextAlign.start,
@@ -374,9 +374,10 @@ class _NewsScreenState extends State<NewsScreen> {
                       color: AppColors.textLight,
                       fontSize: 14.sp,
                       maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Padding(
-                      padding: EdgeInsets.only(bottom: 8.h, right: 12.w),
+                      padding: EdgeInsets.only(bottom: 4.h, right: 12.w),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

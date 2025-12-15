@@ -8,6 +8,9 @@ import 'package:intl/intl.dart';
 import 'package:moneyvesto/core/constants/color.dart';
 import 'package:moneyvesto/core/global_components/global_text.dart';
 import 'package:moneyvesto/data/transaction_datasource.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 class FinanceReportScreen extends StatefulWidget {
   const FinanceReportScreen({super.key});
@@ -30,6 +33,55 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
   void initState() {
     super.initState();
     _loadTransactionData();
+  }
+
+  Future<void> _exportToPdf() async {
+    final pdf = pw.Document();
+    final font = await PdfGoogleFonts.nunitoExtraLight();
+
+    pdf.addPage(
+      pw.Page(
+        pageFormat: PdfPageFormat.a4,
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Header(
+                level: 0,
+                child: pw.Text('Laporan Keuangan - $selectedMonth', style: pw.TextStyle(font: font, fontSize: 24)),
+              ),
+              pw.SizedBox(height: 20),
+              pw.Row(
+                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                children: [
+                  pw.Text('Total Pemasukan: Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(totalIncome)}', style: pw.TextStyle(font: font, color: PdfColors.green)),
+                  pw.Text('Total Pengeluaran: Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(totalExpense)}', style: pw.TextStyle(font: font, color: PdfColors.red)),
+                ],
+              ),
+              pw.SizedBox(height: 20),
+              pw.Table.fromTextArray(
+                context: context,
+                headerStyle: pw.TextStyle(font: font, fontWeight: pw.FontWeight.bold),
+                cellStyle: pw.TextStyle(font: font),
+                data: <List<String>>[
+                  <String>['Tanggal', 'Kategori', 'Tipe', 'Jumlah'],
+                  ...transactions.map((item) => [
+                    item['date'],
+                    item['category'],
+                    item['isIncome'] ? 'Pemasukan' : 'Pengeluaran',
+                    'Rp ${NumberFormat.currency(locale: 'id_ID', symbol: '', decimalDigits: 0).format(item['amount'])}'
+                  ]),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (PdfPageFormat format) async => pdf.save(),
+    );
   }
 
   Future<void> _loadTransactionData() async {
@@ -142,8 +194,14 @@ class _FinanceReportScreenState extends State<FinanceReportScreen> {
             color: AppColors.textLight,
             size: 20.sp,
           ),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.picture_as_pdf, color: AppColors.textLight),
+            onPressed: _exportToPdf,
+          ),
+        ],
       ),
       body:
           isLoading

@@ -226,9 +226,10 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildMainMenu(HomeController controller) {
-    // ... (kode tidak berubah)
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
+    return Wrap(
+      alignment: WrapAlignment.spaceAround,
+      runSpacing: 16.h,
+      spacing: 12.w,
       children: [
         HomeMenuButton(
           icon: Icons.receipt_long_outlined,
@@ -249,6 +250,16 @@ class HomeScreen extends StatelessWidget {
           icon: Icons.article_outlined,
           label: 'News',
           onTap: () => controller.navigateTo(NavigationRoutes.news),
+        ),
+        HomeMenuButton(
+          icon: Icons.account_balance_wallet_outlined,
+          label: 'Budget',
+          onTap: () => controller.navigateTo(NavigationRoutes.budget),
+        ),
+        HomeMenuButton(
+          icon: Icons.emoji_events_outlined,
+          label: 'Gamification',
+          onTap: () => controller.navigateTo(NavigationRoutes.gamification),
         ),
       ],
     );

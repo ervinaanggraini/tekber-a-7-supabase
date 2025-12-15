@@ -35,6 +35,14 @@ class LoginScreen extends StatelessWidget {
 
     return BaseWidgetContainer(
       backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: AppColors.textLight),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: SingleChildScrollView(
         child: SafeArea(
           child: Padding(

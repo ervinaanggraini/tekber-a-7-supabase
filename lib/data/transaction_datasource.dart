@@ -1,7 +1,7 @@
 // file: transaction_data_source.dart
 
 import 'package:dio/dio.dart';
-import 'package:moneyvesto/core/services/DioService.dart';
+import 'package:moneyvesto/core/services/dio_service.dart';
 import 'package:moneyvesto/core/utils/shared_preferences_utils.dart';
 
 // Abstract class (Interface)

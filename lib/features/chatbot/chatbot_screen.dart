@@ -11,7 +11,9 @@ import 'package:moneyvesto/core/global_components/global_text.dart';
 // TAMBAHKAN IMPORT INI untuk mengakses data source transaksi Anda
 import 'package:moneyvesto/data/transaction_datasource.dart';
 
-const String API_BASE_URL = 'http://45.13.132.219:6677';
+// Gunakan 10.0.2.2 jika menggunakan Android Emulator
+// Gunakan 127.0.0.1 jika menggunakan Windows/Web
+const String API_BASE_URL = 'http://127.0.0.1:5000';
 
 class ChatbotScreen extends StatefulWidget {
   const ChatbotScreen({super.key});
@@ -223,7 +225,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                   color: AppColors.textLight,
                 ),
                 onTap: () {
-                  Get.back();
+                  Navigator.pop(context);
                   _pickImage(ImageSource.gallery);
                 },
               ),
@@ -234,7 +236,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
                 ),
                 title: GlobalText.regular('Kamera', color: AppColors.textLight),
                 onTap: () {
-                  Get.back();
+                  Navigator.pop(context);
                   _pickImage(ImageSource.camera);
                 },
               ),
@@ -610,7 +612,7 @@ class _ChatbotScreenState extends State<ChatbotScreen> {
             color: AppColors.textLight,
             size: 20.sp,
           ),
-          onPressed: () => Get.back(),
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Column(
