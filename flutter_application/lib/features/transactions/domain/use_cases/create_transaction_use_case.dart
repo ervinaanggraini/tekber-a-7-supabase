@@ -8,24 +8,21 @@ import 'package:injectable/injectable.dart';
 @injectable
 class CreateTransactionUseCase implements AsyncUseCase<Transaction, CreateTransactionParams> {
   final TransactionRepository _repository;
+  final GamificationService _gamificationService; // Inject Service
 
-  CreateTransactionUseCase(this._repository);
+  CreateTransactionUseCase(this._repository, this._gamificationService);
 
   @override
-  Future<Transaction> execute(CreateTransactionParams params) {
-    final transaction = Transaction(
-      id: '',
-      userId: params.userId,
-      category: params.category,
-      type: params.type,
-      amount: params.amount,
-      description: params.description,
-      notes: params.notes,
-      transactionDate: params.transactionDate,
-      inputMethod: 'manual',
-      createdAt: DateTime.now(),
-    );
-    return _repository.createTransaction(transaction);
+  Future<Transaction> execute(CreateTransactionParams params) async {
+    // ... logic pembuatan object transaction ...
+
+    final result = await _repository.addTransaction(transaction);
+
+    // TRIGGER GAMIFIKASI UTAMA DI SINI
+    // Ini akan men-trigger misi seperti "Catat Transaksi"
+    await _gamificationService.updateMissionProgress('add_transaction');
+
+    return result;
   }
 }
 

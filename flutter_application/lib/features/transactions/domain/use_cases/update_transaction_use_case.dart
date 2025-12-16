@@ -4,15 +4,20 @@ import 'package:flutter_application/features/transactions/domain/entities/transa
 import 'package:flutter_application/features/transactions/domain/entities/category.dart';
 import 'package:flutter_application/features/transactions/domain/repositories/transaction_repository.dart';
 import 'package:injectable/injectable.dart';
+import 'package:flutter_application/features/gamification/services/gamification_service.dart';
 
 @injectable
 class UpdateTransactionUseCase implements AsyncUseCase<Transaction, UpdateTransactionParams> {
   final TransactionRepository _repository;
+  
+  // 1. Tambahkan service ini
+  final GamificationService _gamificationService; 
 
-  UpdateTransactionUseCase(this._repository);
+  // 2. Masukkan ke constructor
+  UpdateTransactionUseCase(this._repository, this._gamificationService);
 
   @override
-  Future<Transaction> execute(UpdateTransactionParams params) {
+  Future<Transaction> execute(UpdateTransactionParams params) async { // Ubah jadi async/await
     final transaction = Transaction(
       id: params.transactionId,
       userId: params.userId,
@@ -25,7 +30,20 @@ class UpdateTransactionUseCase implements AsyncUseCase<Transaction, UpdateTransa
       inputMethod: params.inputMethod,
       createdAt: params.createdAt,
     );
-    return _repository.updateTransaction(transaction);
+    
+    // 3. Simpan update ke database
+    final result = await _repository.updateTransaction(transaction);
+
+    // 4. TRIGGER GAMIFIKASI (Hanya jika update berhasil)
+    // Misal: Cek misi tipe 'update_transaction'
+    try {
+      await _gamificationService.updateMissionProgress('update_transaction');
+    } catch (e) {
+      // Jangan sampai error gamifikasi membatalkan transaksi utama
+      print('Gamification error: $e');
+    }
+
+    return result;
   }
 }
 
