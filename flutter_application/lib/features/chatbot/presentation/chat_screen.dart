@@ -550,7 +550,7 @@ class _EmptyMessagesView extends StatelessWidget {
       case ChatPersona.angryMom:
         return 'Aku akan bantu kamu jaga pengeluaran biar nggak boros! Ayo cerita transaksimu hari ini.';
       case ChatPersona.supportiveCheerleader:
-        return 'Aku di sini untuk support kamu! Cerita aja transaksimu, aku siap dengerin dengan senang hati 💖';
+        return 'Aku di sini untuk support kamu! Cerita aja transaksimu, aku siap dengerin dengan senang hati.';
       case ChatPersona.wiseMentor:
         return 'Aku akan bantu kamu mencapai tujuan finansial. Mari kita mulai dengan mencatat transaksimu.';
     }
@@ -868,21 +868,48 @@ class _ChatBubble extends StatelessWidget {
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        TextButton(
-                          onPressed: () {
-                            // send quick 'ya' message
-                            final cubit = context.read<ChatCubit>();
-                            cubit.sendMessage('ya');
-                          },
-                          child: Text('Ya'),
+                        SizedBox(
+                          height: 36.h,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              final cubit = context.read<ChatCubit>();
+                              cubit.sendMessage('ya');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.b93160,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'Ya',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
                         ),
                         SizedBox(width: 8.w),
-                        TextButton(
-                          onPressed: () {
-                            final cubit = context.read<ChatCubit>();
-                            cubit.sendMessage('tidak');
-                          },
-                          child: Text('Tidak'),
+                        SizedBox(
+                          height: 36.h,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              final cubit = context.read<ChatCubit>();
+                              cubit.sendMessage('tidak');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.b93160,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8.r),
+                              ),
+                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+                              elevation: 0,
+                            ),
+                            child: Text(
+                              'Tidak',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ),
                         ),
                       ],
                     ),

@@ -195,11 +195,25 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
                 'transaction_id': created['id'],
               }).eq('id', lastAssistant['id']);
 
-              // also insert a short assistant reply for clarity
+              // insert persona-specific confirmation reply (yes)
+              final personaVal = lastAssistant['persona'] as String?;
+              String personaYesReply;
+              switch (personaVal) {
+                case 'wise_mentor':
+                  personaYesReply = '🫡 Baik, aku sudah catat transaksimu. Mari kita lanjutkan membangun fondasi finansial yang kuat. Ada yang ingin kamu diskusikan?';
+                  break;
+                case 'supportive_cheerleader':
+                  personaYesReply = '💖 Oke bestie, aku udah catat nih! Semangat terus ya kelola keuangannya! Cerita lagi dong!✨';
+                  break;
+                case 'angry_mom':
+                default:
+                  personaYesReply = '😤 Oke, Ibu catat ya! Jangan lupa, uang itu dicari susah payah loh. Ayo ceritakan lebih detail tentang transaksimu!';
+              }
+
               await supabase.from('chat_messages').insert({
                 'conversation_id': conversationId,
                 'role': 'assistant',
-                'content': 'Transaksi telah disimpan.',
+                'content': personaYesReply,
                 'persona': lastAssistant['persona'],
                 'transaction_id': created['id'],
               });
@@ -218,9 +232,27 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         }
 
         if (isNegative) {
-          await supabase.from('chat_messages').update({
-            'content': 'Baik, saya batal mencatat transaksi tersebut.',
-          }).eq('id', lastAssistant['id']);
+          final personaVal = lastAssistant['persona'] as String?;
+          String personaNoReply;
+          switch (personaVal) {
+            case 'wise_mentor':
+              personaNoReply = '🫡 Baik, ada hal lain yang ingin kamu diskusikan?';
+              break;
+            case 'supportive_cheerleader':
+              personaNoReply = '💖 Aman bestie, terus ada cerita apa lagi?';
+              break;
+            case 'angry_mom':
+            default:
+              personaNoReply = '😤 Oke, kalau tidak mau. Ceritakan transaksimu yang lain!';
+          }
+
+          // Insert a new assistant message with the persona reply so it appears as a separate message
+          await supabase.from('chat_messages').insert({
+            'conversation_id': conversationId,
+            'role': 'assistant',
+            'content': personaNoReply,
+            'persona': personaVal,
+          });
 
           await supabase
               .from('chat_conversations')
@@ -249,7 +281,11 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
 
         final detectedType = parsedTransaction['type'] as String? ?? 'expense';
         final humanType = detectedType == 'income' ? 'pemasukan' : 'pengeluaran';
-        final confirmationText = 'Saya mendeteksi $humanType: ${parsedTransaction['description'] ?? ''} Rp${(parsedTransaction['amount'] as num).toInt()}. Apakah ingin saya catat? (Ya/Tidak)';
+        final amount = (parsedTransaction['amount'] as num).toInt();
+        final desc = parsedTransaction['description'] ?? '';
+        final confirmationText = detectedType == 'income'
+          ? 'Sepertinya aku mendeteksi adanya pemasukan: ${desc} sebesar Rp${amount}. Benar begitu? Mau aku catat?'
+          : 'Sepertinya aku mendeteksi adanya pengeluaran: ${desc} sebesar Rp${amount}. Benar begitu? Mau aku catat?';
 
         await supabase.from('chat_messages').insert({
           'conversation_id': conversationId,
