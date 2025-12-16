@@ -1,0 +1,5 @@
+{
+  "workspace": {
+    "members": ["ai-chat", "ocr-receipt", "fetch-news"]
+  }
+}
