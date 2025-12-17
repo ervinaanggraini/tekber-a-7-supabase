@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:flutter_application/core/constants/app_colors.dart';
 import '/features/notification/user_settings.dart';
 import '/features/notification/services/user_settings_services.dart';
 
@@ -7,13 +9,17 @@ class NotificationSettingsPage extends StatefulWidget {
   const NotificationSettingsPage({super.key});
 
   @override
-  State<NotificationSettingsPage> createState() => _NotificationSettingsPageState();
+  State<NotificationSettingsPage> createState() =>
+      _NotificationSettingsPageState();
 }
 
 class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   final _service = UserSettingsService();
   UserSettings? _settings;
   bool _isLoading = true;
+
+  // warna toggle konsisten
+  final Color _toggleColor = AppColors.b93160;
 
   @override
   void initState() {
@@ -42,36 +48,16 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       if (_settings != null) {
         switch (key) {
           case 'enable_notifications':
-            _settings = UserSettings(
-              enableNotifications: value,
-              enableDailyReminders: _settings!.enableDailyReminders,
-              enableMissionAlerts: _settings!.enableMissionAlerts,
-              enableBudgetAlerts: _settings!.enableBudgetAlerts,
-            );
+            _settings = _settings!.copyWith(enableNotifications: value);
             break;
           case 'enable_daily_reminders':
-            _settings = UserSettings(
-              enableNotifications: _settings!.enableNotifications,
-              enableDailyReminders: value,
-              enableMissionAlerts: _settings!.enableMissionAlerts,
-              enableBudgetAlerts: _settings!.enableBudgetAlerts,
-            );
+            _settings = _settings!.copyWith(enableDailyReminders: value);
             break;
           case 'enable_mission_alerts':
-            _settings = UserSettings(
-              enableNotifications: _settings!.enableNotifications,
-              enableDailyReminders: _settings!.enableDailyReminders,
-              enableMissionAlerts: value,
-              enableBudgetAlerts: _settings!.enableBudgetAlerts,
-            );
+            _settings = _settings!.copyWith(enableMissionAlerts: value);
             break;
           case 'enable_budget_alerts':
-            _settings = UserSettings(
-              enableNotifications: _settings!.enableNotifications,
-              enableDailyReminders: _settings!.enableDailyReminders,
-              enableMissionAlerts: _settings!.enableMissionAlerts,
-              enableBudgetAlerts: value,
-            );
+            _settings = _settings!.copyWith(enableBudgetAlerts: value);
             break;
         }
       }
@@ -81,11 +67,15 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
     if (_settings == null) {
-      return const Center(child: Text("User settings tidak ditemukan"));
+      return const Scaffold(
+        body: Center(child: Text("User settings tidak ditemukan")),
+      );
     }
 
     return Scaffold(
@@ -97,21 +87,29 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
           SwitchListTile(
             title: const Text("Enable Notifications"),
             value: _settings!.enableNotifications,
+            activeColor: _toggleColor,
+            activeTrackColor: _toggleColor.withOpacity(0.4),
             onChanged: (v) => _update('enable_notifications', v),
           ),
           SwitchListTile(
             title: const Text("Daily Reminders"),
             value: _settings!.enableDailyReminders,
+            activeColor: _toggleColor,
+            activeTrackColor: _toggleColor.withOpacity(0.4),
             onChanged: (v) => _update('enable_daily_reminders', v),
           ),
           SwitchListTile(
             title: const Text("Mission Alerts"),
             value: _settings!.enableMissionAlerts,
+            activeColor: _toggleColor,
+            activeTrackColor: _toggleColor.withOpacity(0.4),
             onChanged: (v) => _update('enable_mission_alerts', v),
           ),
           SwitchListTile(
             title: const Text("Budget Alerts"),
             value: _settings!.enableBudgetAlerts,
+            activeColor: _toggleColor,
+            activeTrackColor: _toggleColor.withOpacity(0.4),
             onChanged: (v) => _update('enable_budget_alerts', v),
           ),
         ],
