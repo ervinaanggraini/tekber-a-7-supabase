@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../domain/entities/portfolio_item.dart';
 import 'package:flutter_application/core/constants/app_colors.dart';
+import 'sell_stock_dialog.dart';
 
 class PortfolioCard extends StatelessWidget {
   final PortfolioItem item;
@@ -13,118 +14,124 @@ class PortfolioCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isUp = item.profitPercent >= 0;
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 8,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      padding: const EdgeInsets.all(16),
-      child: Column(
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: AppColors.b93160.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Center(
-                  child: Text(
-                    item.code.substring(0, 1),
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.b93160,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  item.code,
-                  style: GoogleFonts.poppins(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    'Rp ${item.currentValue.toStringAsFixed(0).replaceAllMapped(
-                          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-                          (Match m) => '${m[1]}.',
-                        )}',
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${item.totalUnits.toStringAsFixed(3).replaceAllMapped(
-                          RegExp(r'(\d)(?=(\d{3})+(?!\d))'),
-                          (Match m) => '${m[1]}.',
-                        )} unit',
-                    style: GoogleFonts.poppins(
-                      fontSize: 12,
-                      color: Colors.grey[600],
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${item.profitPercent >= 0 ? '+' : ''}${item.profitPercent.toStringAsFixed(2)}%',
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: item.profitPercent >= 0
-                          ? const Color(0xFF4CAF50)
-                          : Colors.red,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            width: double.infinity,
-            height: 40,
-            child: ElevatedButton(
-              onPressed: () {
-                // Handle sell action
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.b93160,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.b93160.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
               child: Text(
-                'JUAL',
+                item.code.substring(0, 1),
                 style: GoogleFonts.poppins(
-                  fontSize: 14,
+                  color: AppColors.b93160,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: 0.5,
+                  fontSize: 18,
                 ),
               ),
             ),
           ),
+
+          const SizedBox(width: 12),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.code,
+                  style: GoogleFonts.poppins(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '${item.totalUnits.toStringAsFixed(0)} unit',
+                  style: GoogleFonts.poppins(
+                    fontSize: 12,
+                    color: Colors.grey[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          Text(
+            '${isUp ? '+' : ''}${item.profitPercent.toStringAsFixed(2)}%',
+            style: GoogleFonts.poppins(
+              color: isUp ? Colors.green : Colors.red,
+              fontWeight: FontWeight.w600,
+              fontSize: 13,
+            ),
+          ),
+
+          const SizedBox(width: 8),
+
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  Color(0xFFF5D372),
+                  Color(0xFFE8B84E),
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Color(0xFFE8B84E).withOpacity(0.3),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  builder: (_) => SellStock(item: item),
+                );
+              },
+              child: Text(
+                'Jual',
+                style: GoogleFonts.poppins(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          )
         ],
       ),
     );

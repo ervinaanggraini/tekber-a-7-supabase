@@ -1,9 +1,9 @@
 class PortfolioItem {
   final String code;          // BBCA
   final String name;          // Bank Central Asia
-  final double totalUnits;    // jumlah lot/unit
-  final double totalInvested; // total uang dibeli
-  final double currentValue; // nilai sekarang
+  double totalUnits;    // jumlah lot/unit
+  double totalInvested; // total uang dibeli
+  double currentValue; // nilai sekarang
 
   PortfolioItem({
     required this.code,
