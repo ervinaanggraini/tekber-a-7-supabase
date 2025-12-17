@@ -102,6 +102,8 @@ import 'package:flutter_application/features/transactions/domain/use_cases/updat
     as _i162;
 import 'package:flutter_application/features/transactions/presentation/cubit/add_transaction_cubit.dart'
     as _i621;
+import 'package:flutter_application/features/gamification/services/gamification_service.dart'
+    as _i877;
 import 'package:flutter_application/features/user/data/repository/supabase_user_repository.dart'
     as _i763;
 import 'package:flutter_application/features/user/domain/repository/user_repository.dart'
@@ -114,6 +116,7 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:supabase/supabase.dart' as _i590;
 import 'package:supabase_flutter/supabase_flutter.dart' as _i454;
+
 
 extension GetItInjectableX on _i174.GetIt {
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -222,7 +225,9 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i725.GetRecentTransactionsUseCase>(),
         ));
     gh.factory<_i198.CreateTransactionUseCase>(() =>
-        _i198.CreateTransactionUseCase(gh<_i993.TransactionRepository>()));
+        _i198.CreateTransactionUseCase(
+          gh<_i993.TransactionRepository>(),
+        ));
     gh.factory<_i219.DeleteTransactionUseCase>(() =>
         _i219.DeleteTransactionUseCase(gh<_i993.TransactionRepository>()));
     gh.factory<_i268.GetCategoriesUseCase>(
