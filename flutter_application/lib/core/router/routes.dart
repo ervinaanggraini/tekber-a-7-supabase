@@ -42,6 +42,15 @@ enum Routes {
   chat(
     name: "chat",
     path: "/chat",
+  ),
+  invest(
+    name: "invest",
+    path: "/invest",
+  ),
+
+  portfolio(
+    name: 'portfolio',
+    path: '/portfolio',
   );
 
   const Routes({

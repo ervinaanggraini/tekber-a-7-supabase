@@ -13,6 +13,7 @@ import 'package:flutter_application/features/transactions/presentation/cubit/add
 import 'package:flutter_application/features/transactions/presentation/widgets/add_transaction_dialog.dart';
 import 'package:flutter_application/features/reports/presentation/page/reports_page.dart';
 import 'package:flutter_application/features/analytics/presentation/page/analytics_page.dart';
+import 'package:flutter_application/features/invest/presentation/pages/invest_page.dart';
 import 'package:flutter_application/features/transaction/presentation/pages/transaction_history_page.dart';
 import 'package:flutter_application/dependency_injection.dart';
 
@@ -453,14 +454,10 @@ class _HomeContentView extends StatelessWidget {
                             icon: Icons.savings_outlined,
                             label: "Invest",
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Fitur Invest sedang dalam pengembangan',
-                                    style: GoogleFonts.poppins(),
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: const Duration(seconds: 2),
+                              Navigator.push(
+                               context,
+                               MaterialPageRoute(
+                                 builder: (_) => const InvestPage(),
                                 ),
                               );
                             },

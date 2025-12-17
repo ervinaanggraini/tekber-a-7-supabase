@@ -550,7 +550,7 @@ class _EmptyMessagesView extends StatelessWidget {
       case ChatPersona.angryMom:
         return 'Aku akan bantu kamu jaga pengeluaran biar nggak boros! Ayo cerita transaksimu hari ini.';
       case ChatPersona.supportiveCheerleader:
-        return 'Aku di sini untuk support kamu! Cerita aja transaksimu, aku siap dengerin dengan senang hati.';
+        return 'Aku di sini untuk support kamu! Cerita aja transaksimu, aku siap dengerin dengan senang hati 💖';
       case ChatPersona.wiseMentor:
         return 'Aku akan bantu kamu mencapai tujuan finansial. Mari kita mulai dengan mencatat transaksimu.';
     }
@@ -860,88 +860,6 @@ class _ChatBubble extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 14.sp,
                         color: isUser ? Colors.white : (isDark ? Colors.white : AppColors.b93160),
-                      ),
-                    ),
-                  // If this assistant message is a confirmation request, show quick actions
-                  if (!isUser && message.intent == 'confirm_transaction') ...[
-                    SizedBox(height: 8.h),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        SizedBox(
-                          height: 36.h,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              final cubit = context.read<ChatCubit>();
-                              cubit.sendMessage('ya');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.b93160,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              'Ya',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        SizedBox(
-                          height: 36.h,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              final cubit = context.read<ChatCubit>();
-                              cubit.sendMessage('tidak');
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.b93160,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8.r),
-                              ),
-                              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              'Tidak',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                  if (message.transactionId != null) SizedBox(height: 8.h),
-                  if (message.transactionId != null)
-                    GestureDetector(
-                      onTap: () {
-                        // For now, just show simple snackbar with transaction info
-                        final amt = message.extractedData != null ? message.extractedData!['amount'] : null;
-                        final desc = message.extractedData != null ? message.extractedData!['description'] : null;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('Transaksi dicatat: ${desc ?? ''} ${amt != null ? ' - Rp${amt.toInt()}' : ''}')),
-                        );
-                      },
-                      child: Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
-                        decoration: BoxDecoration(
-                          color: isUser ? Colors.white.withOpacity(0.08) : (isDark ? Colors.grey[800] : AppColors.f4e8da),
-                          borderRadius: BorderRadius.circular(8.r),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(Icons.receipt_long, size: 14.sp, color: isUser ? Colors.white : AppColors.b93160),
-                            SizedBox(width: 6.w),
-                            Text(
-                              'Transaksi dicatat',
-                              style: TextStyle(fontSize: 12.sp, color: isUser ? Colors.white : AppColors.b93160),
-                            ),
-                          ],
-                        ),
                       ),
                     ),
                 ],

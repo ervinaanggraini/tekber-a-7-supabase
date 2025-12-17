@@ -1,8 +1,11 @@
 import 'package:flutter_application/core/router/routes.dart';
 import 'package:flutter_application/features/home/presentation/home_page.dart';
+import 'package:flutter_application/features/invest/presentation/pages/invest_page.dart';
 import 'package:flutter_application/features/theme_mode/presentation/page/theme_mode__page.dart';
 import 'package:flutter_application/features/user/presentation/page/change_email_address_page.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_application/features/invest/presentation/pages/portfolio_page.dart';
+
 
 import 'package:flutter_application/features/auth/presentation/page/login_callback_page.dart';
 import 'package:flutter_application/features/auth/presentation/page/register_page.dart';
@@ -68,6 +71,16 @@ final router = GoRouter(
         final conversationId = state.extra as String?;
         return ChatScreen(conversationId: conversationId);
       },
+    ),
+    GoRoute(
+      name: Routes.invest.name,
+      path: Routes.invest.path,
+      builder: (context, state) => const InvestPage(),
+    ),
+    GoRoute(
+      path: Routes.portfolio.path,
+      name: Routes.portfolio.name,
+      builder: (context, state) => const PortfolioPage(),
     ),
   ],
 );
