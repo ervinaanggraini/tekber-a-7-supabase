@@ -63,6 +63,25 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       throw Exception('User not authenticated');
     }
 
+    // Check if conversation with this persona already exists
+    final existingConversation = await supabase
+        .from('chat_conversations')
+        .select()
+        .eq('user_id', userId)
+        .eq('persona', persona.value)
+        .eq('is_archived', false)
+        .order('created_at', ascending: false)
+        .limit(1)
+        .maybeSingle();
+
+    // Return existing conversation if found
+    if (existingConversation != null) {
+      print('📌 Using existing conversation for ${persona.name}');
+      return ChatConversationModel.fromJson(existingConversation);
+    }
+
+    // Create new conversation if none exists
+    print('✨ Creating new conversation for ${persona.name}');
     final response = await supabase
         .from('chat_conversations')
         .insert({
@@ -137,25 +156,9 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
       print('⚠️ Transaction parsing failed: $e');
     }
 
-    // Insert user message immediately to keep DB consistent
+    // NOTE: User message akan di-insert oleh Edge Function
+    // Tidak perlu insert di sini untuk menghindari duplicate
     Map<String, dynamic>? insertedUserMessage;
-    try {
-      final userId = supabase.auth.currentUser?.id;
-      if (userId == null) throw Exception('User not authenticated');
-
-      final userMsg = {
-        'conversation_id': conversationId,
-        'role': 'user',
-        'content': message,
-        if (imageUrl != null) 'image_url': imageUrl,
-        if (parsedTransaction != null) 'extracted_data': parsedTransaction,
-      };
-
-      insertedUserMessage = await supabase.from('chat_messages').insert(userMsg).select().single();
-      print('✅ User message saved: ${insertedUserMessage['id']}');
-    } catch (e) {
-      print('❌ Failed to save user message early: $e');
-    }
 
     // If there's a pending confirmation, interpret this message as response
     try {

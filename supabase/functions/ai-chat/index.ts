@@ -216,7 +216,15 @@ serve(async (req: Request) => {
       }
 
       const aiResponse = await openRouterResponse.json()
-      aiMessage = aiResponse.choices[0].message.content
+      console.log('🤖 OpenRouter raw response:', JSON.stringify(aiResponse))
+      
+      aiMessage = aiResponse.choices?.[0]?.message?.content || ''
+      
+      // If empty response, throw error to trigger fallback
+      if (!aiMessage || aiMessage.trim().length === 0) {
+        console.error('⚠️ Empty AI response received')
+        throw new Error('Empty AI response')
+      }
       
       // Clean up response - remove any XML tags, [INST] tags, or weird formatting
       aiMessage = aiMessage
@@ -225,8 +233,11 @@ serve(async (req: Request) => {
         .replace(/\[s\]/g, '') // Remove [s]
         .replace(/\[\/INST\]/g, '') // Remove [/INST]
         .replace(/\[INST\]/g, '') // Remove [INST]
+        .replace(/\[OUT\]/g, '') // Remove [OUT]
+        .replace(/\[\/OUT\]/g, '') // Remove [/OUT]
         .replace(/\[\/\]/g, '') // Remove [/]
         .replace(/\[\]/g, '') // Remove []
+        .replace(/^\s*[\r\n]+/gm, '') // Remove empty lines at start
         .trim()
       
       // If response is too long or doesn't make sense, use fallback
