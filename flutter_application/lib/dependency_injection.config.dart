@@ -52,6 +52,8 @@ import 'package:flutter_application/features/chatbot/domain/repositories/chat_re
     as _i159;
 import 'package:flutter_application/features/chatbot/presentation/cubit/chat_cubit.dart'
     as _i914;
+import 'package:flutter_application/features/gamification/services/gamification_service.dart'
+    as _i725;
 import 'package:flutter_application/features/home/presentation/bloc/bottom_navigation_bar/bottom_navigation_bar_cubit.dart'
     as _i740;
 import 'package:flutter_application/features/home/presentation/bloc/home/home_cubit.dart'
@@ -102,8 +104,6 @@ import 'package:flutter_application/features/transactions/domain/use_cases/updat
     as _i162;
 import 'package:flutter_application/features/transactions/presentation/cubit/add_transaction_cubit.dart'
     as _i621;
-import 'package:flutter_application/features/gamification/services/gamification_service.dart'
-    as _i877;
 import 'package:flutter_application/features/user/data/repository/supabase_user_repository.dart'
     as _i763;
 import 'package:flutter_application/features/user/domain/repository/user_repository.dart'
@@ -116,7 +116,6 @@ import 'package:get_it/get_it.dart' as _i174;
 import 'package:injectable/injectable.dart' as _i526;
 import 'package:supabase/supabase.dart' as _i590;
 import 'package:supabase_flutter/supabase_flutter.dart' as _i454;
-
 
 extension GetItInjectableX on _i174.GetIt {
 // initializes the registration of main-scope dependencies inside of GetIt
@@ -139,6 +138,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i592.ChatRemoteDataSource>(
         () => chatModule.chatRemoteDataSource);
     gh.lazySingleton<_i159.ChatRepository>(() => chatModule.chatRepository);
+    gh.lazySingleton<_i725.GamificationService>(
+        () => _i725.GamificationService());
     gh.lazySingleton<_i125.AnalyticsRemoteDataSource>(
         () => _i125.AnalyticsRemoteDataSourceImpl(gh<_i454.SupabaseClient>()));
     gh.factory<_i12.ThemeModeRepository>(() => _i279.ThemeModeHiveRepository());
@@ -225,9 +226,7 @@ extension GetItInjectableX on _i174.GetIt {
               gh<_i725.GetRecentTransactionsUseCase>(),
         ));
     gh.factory<_i198.CreateTransactionUseCase>(() =>
-        _i198.CreateTransactionUseCase(
-          gh<_i993.TransactionRepository>(),
-        ));
+        _i198.CreateTransactionUseCase(gh<_i993.TransactionRepository>()));
     gh.factory<_i219.DeleteTransactionUseCase>(() =>
         _i219.DeleteTransactionUseCase(gh<_i993.TransactionRepository>()));
     gh.factory<_i268.GetCategoriesUseCase>(
