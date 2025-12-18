@@ -42,7 +42,35 @@ enum Routes {
   chat(
     name: "chat",
     path: "/chat",
+  ),
+  budget(
+    name: "budget",
+    path: "/budget",
+  ),
+  savingsGoal(
+    name: "savingsGoal",
+    path: "/savingsGoal",
+  ),
+  financialInsights(
+    name: "financialInsights",
+    path: "/financialInsights",
+  ),
+  notifications(
+    name: "notifications",
+    path: "/notifications",
+  ),
+  ocr(
+    name: "ocr",
+    path: "/ocr",
+  ),
+  education(
+    name: "education",
+    path: "/education",
   );
+
+
+
+
 
   const Routes({
     required this.path,

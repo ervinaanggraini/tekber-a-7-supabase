@@ -68,17 +68,14 @@ class SupabaseAuthRepository implements AuthRepository {
 
   Future<void> _createUserProfile(User user) async {
     try {
-      await _supabaseClient.from('user_profiles').insert({
+      await _supabaseClient.from('user_profiles').upsert({
         'id': user.id,
         'full_name': user.userMetadata?['full_name'] ?? user.email?.split('@')[0] ?? 'User',
         'created_at': DateTime.now().toIso8601String(),
         'updated_at': DateTime.now().toIso8601String(),
-      });
+      }, onConflict: 'id', ignoreDuplicates: true);
     } catch (e) {
-      // Ignore error if profile already exists
-      if (!e.toString().contains('duplicate key')) {
-        debugPrint("Create User Profile Error: $e");
-      }
+      debugPrint("Create User Profile Error: $e");
     }
   }
 

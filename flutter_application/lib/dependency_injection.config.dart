@@ -44,6 +44,22 @@ import 'package:flutter_application/features/auth/presentation/bloc/login/login_
     as _i723;
 import 'package:flutter_application/features/auth/presentation/bloc/register/register_cubit.dart'
     as _i553;
+import 'package:flutter_application/features/budget/data/data_sources/budget_remote_data_source.dart'
+    as _i628;
+import 'package:flutter_application/features/budget/data/repositories/budget_repository_impl.dart'
+    as _i962;
+import 'package:flutter_application/features/budget/domain/repositories/budget_repository.dart'
+    as _i363;
+import 'package:flutter_application/features/budget/domain/use_cases/create_budget_use_case.dart'
+    as _i203;
+import 'package:flutter_application/features/budget/domain/use_cases/delete_budget_use_case.dart'
+    as _i910;
+import 'package:flutter_application/features/budget/domain/use_cases/get_budgets_use_case.dart'
+    as _i131;
+import 'package:flutter_application/features/budget/domain/use_cases/update_budget_use_case.dart'
+    as _i869;
+import 'package:flutter_application/features/budget/presentation/cubit/budget_cubit.dart'
+    as _i860;
 import 'package:flutter_application/features/chatbot/data/data_sources/chat_remote_data_source.dart'
     as _i592;
 import 'package:flutter_application/features/chatbot/di/chat_module.dart'
@@ -52,10 +68,56 @@ import 'package:flutter_application/features/chatbot/domain/repositories/chat_re
     as _i159;
 import 'package:flutter_application/features/chatbot/presentation/cubit/chat_cubit.dart'
     as _i914;
+import 'package:flutter_application/features/education/data/data_sources/education_remote_data_source.dart'
+    as _i85;
+import 'package:flutter_application/features/education/data/repositories/education_repository_impl.dart'
+    as _i339;
+import 'package:flutter_application/features/education/domain/repositories/education_repository.dart'
+    as _i261;
+import 'package:flutter_application/features/education/domain/use_cases/get_courses_use_case.dart'
+    as _i154;
+import 'package:flutter_application/features/education/domain/use_cases/get_education_articles_use_case.dart'
+    as _i401;
+import 'package:flutter_application/features/education/domain/use_cases/mark_article_read_use_case.dart'
+    as _i259;
+import 'package:flutter_application/features/education/presentation/cubit/education_cubit.dart'
+    as _i84;
+import 'package:flutter_application/features/financial_insights/data/data_sources/financial_insights_remote_data_source.dart'
+    as _i271;
+import 'package:flutter_application/features/financial_insights/data/repositories/financial_insights_repository_impl.dart'
+    as _i500;
+import 'package:flutter_application/features/financial_insights/domain/repositories/financial_insights_repository.dart'
+    as _i287;
+import 'package:flutter_application/features/financial_insights/domain/use_cases/get_financial_insights_use_case.dart'
+    as _i884;
+import 'package:flutter_application/features/financial_insights/presentation/cubit/financial_insights_cubit.dart'
+    as _i466;
 import 'package:flutter_application/features/home/presentation/bloc/bottom_navigation_bar/bottom_navigation_bar_cubit.dart'
     as _i740;
 import 'package:flutter_application/features/home/presentation/bloc/home/home_cubit.dart'
     as _i436;
+import 'package:flutter_application/features/notification/data/data_sources/notification_remote_data_source.dart'
+    as _i180;
+import 'package:flutter_application/features/notification/data/repositories/notification_repository_impl.dart'
+    as _i461;
+import 'package:flutter_application/features/notification/domain/repositories/notification_repository.dart'
+    as _i409;
+import 'package:flutter_application/features/notification/domain/use_cases/get_notifications_use_case.dart'
+    as _i827;
+import 'package:flutter_application/features/notification/domain/use_cases/mark_notification_read_use_case.dart'
+    as _i160;
+import 'package:flutter_application/features/notification/presentation/cubit/notification_cubit.dart'
+    as _i915;
+import 'package:flutter_application/features/ocr_receipt/data/data_sources/ocr_remote_data_source.dart'
+    as _i248;
+import 'package:flutter_application/features/ocr_receipt/data/repositories/ocr_repository_impl.dart'
+    as _i398;
+import 'package:flutter_application/features/ocr_receipt/domain/repositories/ocr_repository.dart'
+    as _i743;
+import 'package:flutter_application/features/ocr_receipt/domain/use_cases/scan_receipt_use_case.dart'
+    as _i49;
+import 'package:flutter_application/features/ocr_receipt/presentation/cubit/ocr_cubit.dart'
+    as _i427;
 import 'package:flutter_application/features/onboarding/data/repository/onboarding_repository.dart'
     as _i483;
 import 'package:flutter_application/features/onboarding/presentation/cubit/onboarding_cubit.dart'
@@ -70,6 +132,22 @@ import 'package:flutter_application/features/reports/domain/use_cases/get_report
     as _i161;
 import 'package:flutter_application/features/reports/presentation/cubit/reports_cubit.dart'
     as _i180;
+import 'package:flutter_application/features/savings_goal/data/data_sources/savings_goal_remote_data_source.dart'
+    as _i784;
+import 'package:flutter_application/features/savings_goal/data/repositories/savings_goal_repository_impl.dart'
+    as _i673;
+import 'package:flutter_application/features/savings_goal/domain/repositories/savings_goal_repository.dart'
+    as _i402;
+import 'package:flutter_application/features/savings_goal/domain/use_cases/create_savings_goal_use_case.dart'
+    as _i287;
+import 'package:flutter_application/features/savings_goal/domain/use_cases/delete_savings_goal_use_case.dart'
+    as _i445;
+import 'package:flutter_application/features/savings_goal/domain/use_cases/get_savings_goals_use_case.dart'
+    as _i1;
+import 'package:flutter_application/features/savings_goal/domain/use_cases/update_savings_goal_use_case.dart'
+    as _i87;
+import 'package:flutter_application/features/savings_goal/presentation/cubit/savings_goal_cubit.dart'
+    as _i354;
 import 'package:flutter_application/features/theme_mode/data/repository/theme_mode_hive_repository.dart'
     as _i279;
 import 'package:flutter_application/features/theme_mode/domain/repository/theme_mode_repository.dart'
@@ -136,8 +214,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i592.ChatRemoteDataSource>(
         () => chatModule.chatRemoteDataSource);
     gh.lazySingleton<_i159.ChatRepository>(() => chatModule.chatRepository);
+    gh.lazySingleton<_i248.OcrRemoteDataSource>(
+        () => _i248.OcrRemoteDataSourceImpl(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i125.AnalyticsRemoteDataSource>(
         () => _i125.AnalyticsRemoteDataSourceImpl(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i271.FinancialInsightsRemoteDataSource>(() =>
+        _i271.FinancialInsightsRemoteDataSourceImpl(
+            gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i784.SavingsGoalRemoteDataSource>(() =>
+        _i784.SavingsGoalRemoteDataSourceImpl(gh<_i454.SupabaseClient>()));
     gh.factory<_i12.ThemeModeRepository>(() => _i279.ThemeModeHiveRepository());
     gh.factory<_i483.OnboardingRepository>(
         () => _i483.OnboardingRepositoryImpl());
@@ -153,6 +238,8 @@ extension GetItInjectableX on _i174.GetIt {
         _i1023.GetOrSetInitialThemeModeUseCase(gh<_i12.ThemeModeRepository>()));
     gh.factory<_i727.SetThemeModeUseCase>(
         () => _i727.SetThemeModeUseCase(gh<_i12.ThemeModeRepository>()));
+    gh.lazySingleton<_i180.NotificationRemoteDataSource>(() =>
+        _i180.NotificationRemoteDataSourceImpl(gh<_i454.SupabaseClient>()));
     gh.factory<_i392.UserRepository>(() => _i763.SupabaseUserRepository(
           gh<_i590.GoTrueClient>(),
           gh<_i590.FunctionsClient>(),
@@ -169,6 +256,8 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i603.LogoutUseCase(gh<_i946.AuthRepository>()));
     gh.factory<_i829.SignUpWithEmailAndPasswordUseCase>(() =>
         _i829.SignUpWithEmailAndPasswordUseCase(gh<_i946.AuthRepository>()));
+    gh.lazySingleton<_i628.BudgetRemoteDataSource>(
+        () => _i628.BudgetRemoteDataSourceImpl(gh<_i454.SupabaseClient>()));
     gh.factory<_i652.GetAnalyticsSummaryUseCase>(() =>
         _i652.GetAnalyticsSummaryUseCase(gh<_i905.AnalyticsRepository>()));
     gh.factory<_i646.UpdateSavingsGoalUseCase>(
@@ -179,17 +268,40 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i1023.GetOrSetInitialThemeModeUseCase>(),
           gh<_i727.SetThemeModeUseCase>(),
         ));
+    gh.lazySingleton<_i287.FinancialInsightsRepository>(() =>
+        _i500.FinancialInsightsRepositoryImpl(
+            gh<_i271.FinancialInsightsRemoteDataSource>()));
+    gh.lazySingleton<_i363.BudgetRepository>(
+        () => _i962.BudgetRepositoryImpl(gh<_i628.BudgetRemoteDataSource>()));
     gh.factory<_i177.OnboardingCubit>(
         () => _i177.OnboardingCubit(gh<_i483.OnboardingRepository>()));
     gh.factory<_i723.LoginCubit>(() => _i723.LoginCubit(
           gh<_i459.LoginWithEmailAndPasswordUseCase>(),
           gh<_i829.SignUpWithEmailAndPasswordUseCase>(),
         ));
+    gh.lazySingleton<_i402.SavingsGoalRepository>(() =>
+        _i673.SavingsGoalRepositoryImpl(
+            gh<_i784.SavingsGoalRemoteDataSource>()));
     gh.lazySingleton<_i713.TransactionRemoteDataSource>(() =>
         _i713.TransactionRemoteDataSourceImpl(
             supabaseClient: gh<_i454.SupabaseClient>()));
     gh.factory<_i553.RegisterCubit>(() =>
         _i553.RegisterCubit(gh<_i829.SignUpWithEmailAndPasswordUseCase>()));
+    gh.lazySingleton<_i287.CreateSavingsGoalUseCase>(() =>
+        _i287.CreateSavingsGoalUseCase(gh<_i402.SavingsGoalRepository>()));
+    gh.lazySingleton<_i445.DeleteSavingsGoalUseCase>(() =>
+        _i445.DeleteSavingsGoalUseCase(gh<_i402.SavingsGoalRepository>()));
+    gh.lazySingleton<_i1.GetSavingsGoalsUseCase>(
+        () => _i1.GetSavingsGoalsUseCase(gh<_i402.SavingsGoalRepository>()));
+    gh.lazySingleton<_i87.UpdateSavingsGoalUseCase>(
+        () => _i87.UpdateSavingsGoalUseCase(gh<_i402.SavingsGoalRepository>()));
+    gh.lazySingleton<_i85.EducationRemoteDataSource>(
+        () => _i85.EducationRemoteDataSourceImpl(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i409.NotificationRepository>(() =>
+        _i461.NotificationRepositoryImpl(
+            gh<_i180.NotificationRemoteDataSource>()));
+    gh.lazySingleton<_i743.OcrRepository>(
+        () => _i398.OcrRepositoryImpl(gh<_i248.OcrRemoteDataSource>()));
     gh.lazySingleton<_i62.ReportRepository>(
         () => _i194.ReportRepositoryImpl(gh<_i873.ReportRemoteDataSource>()));
     gh.factory<_i870.AnalyticsCubit>(() => _i870.AnalyticsCubit(
@@ -203,8 +315,31 @@ extension GetItInjectableX on _i174.GetIt {
           gh<_i781.GetCurrentAuthStateUseCase>(),
           gh<_i603.LogoutUseCase>(),
         ));
+    gh.lazySingleton<_i827.GetNotificationsUseCase>(() =>
+        _i827.GetNotificationsUseCase(gh<_i409.NotificationRepository>()));
+    gh.lazySingleton<_i160.MarkNotificationReadUseCase>(() =>
+        _i160.MarkNotificationReadUseCase(gh<_i409.NotificationRepository>()));
+    gh.lazySingleton<_i884.GetFinancialInsightsUseCase>(() =>
+        _i884.GetFinancialInsightsUseCase(
+            gh<_i287.FinancialInsightsRepository>()));
     gh.factory<_i161.GetReportSummaryUseCase>(
         () => _i161.GetReportSummaryUseCase(gh<_i62.ReportRepository>()));
+    gh.lazySingleton<_i203.CreateBudgetUseCase>(
+        () => _i203.CreateBudgetUseCase(gh<_i363.BudgetRepository>()));
+    gh.lazySingleton<_i910.DeleteBudgetUseCase>(
+        () => _i910.DeleteBudgetUseCase(gh<_i363.BudgetRepository>()));
+    gh.lazySingleton<_i131.GetBudgetsUseCase>(
+        () => _i131.GetBudgetsUseCase(gh<_i363.BudgetRepository>()));
+    gh.lazySingleton<_i869.UpdateBudgetUseCase>(
+        () => _i869.UpdateBudgetUseCase(gh<_i363.BudgetRepository>()));
+    gh.factory<_i354.SavingsGoalCubit>(() => _i354.SavingsGoalCubit(
+          gh<_i1.GetSavingsGoalsUseCase>(),
+          gh<_i287.CreateSavingsGoalUseCase>(),
+          gh<_i87.UpdateSavingsGoalUseCase>(),
+          gh<_i445.DeleteSavingsGoalUseCase>(),
+        ));
+    gh.lazySingleton<_i49.ScanReceiptUseCase>(
+        () => _i49.ScanReceiptUseCase(gh<_i743.OcrRepository>()));
     gh.lazySingleton<_i993.TransactionRepository>(() =>
         _i661.TransactionRepositoryImpl(
             remoteDataSource: gh<_i713.TransactionRemoteDataSource>()));
@@ -214,8 +349,20 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i725.GetRecentTransactionsUseCase>(() =>
         _i725.GetRecentTransactionsUseCase(
             repository: gh<_i993.TransactionRepository>()));
+    gh.factory<_i915.NotificationCubit>(() => _i915.NotificationCubit(
+          gh<_i827.GetNotificationsUseCase>(),
+          gh<_i160.MarkNotificationReadUseCase>(),
+        ));
+    gh.lazySingleton<_i261.EducationRepository>(() =>
+        _i339.EducationRepositoryImpl(gh<_i85.EducationRemoteDataSource>()));
     gh.factory<_i75.ChangeEmailAddressCubit>(() =>
         _i75.ChangeEmailAddressCubit(gh<_i627.ChangeEmailAddressUseCase>()));
+    gh.factory<_i860.BudgetCubit>(() => _i860.BudgetCubit(
+          gh<_i131.GetBudgetsUseCase>(),
+          gh<_i203.CreateBudgetUseCase>(),
+          gh<_i869.UpdateBudgetUseCase>(),
+          gh<_i910.DeleteBudgetUseCase>(),
+        ));
     gh.factory<_i436.HomeCubit>(() => _i436.HomeCubit(
           getCashflowSummaryUseCase: gh<_i357.GetCashflowSummaryUseCase>(),
           getRecentTransactionsUseCase:
@@ -229,12 +376,27 @@ extension GetItInjectableX on _i174.GetIt {
         () => _i268.GetCategoriesUseCase(gh<_i993.TransactionRepository>()));
     gh.factory<_i162.UpdateTransactionUseCase>(() =>
         _i162.UpdateTransactionUseCase(gh<_i993.TransactionRepository>()));
+    gh.factory<_i427.OcrCubit>(
+        () => _i427.OcrCubit(gh<_i49.ScanReceiptUseCase>()));
     gh.factory<_i124.TransactionBloc>(() => _i124.TransactionBloc(
           gh<_i725.GetRecentTransactionsUseCase>(),
           gh<_i219.DeleteTransactionUseCase>(),
         ));
+    gh.factory<_i466.FinancialInsightsCubit>(() =>
+        _i466.FinancialInsightsCubit(gh<_i884.GetFinancialInsightsUseCase>()));
     gh.factory<_i180.ReportsCubit>(
         () => _i180.ReportsCubit(gh<_i161.GetReportSummaryUseCase>()));
+    gh.lazySingleton<_i154.GetCoursesUseCase>(
+        () => _i154.GetCoursesUseCase(gh<_i261.EducationRepository>()));
+    gh.lazySingleton<_i401.GetEducationArticlesUseCase>(() =>
+        _i401.GetEducationArticlesUseCase(gh<_i261.EducationRepository>()));
+    gh.lazySingleton<_i259.MarkArticleReadUseCase>(
+        () => _i259.MarkArticleReadUseCase(gh<_i261.EducationRepository>()));
+    gh.factory<_i84.EducationCubit>(() => _i84.EducationCubit(
+          gh<_i154.GetCoursesUseCase>(),
+          gh<_i401.GetEducationArticlesUseCase>(),
+          gh<_i259.MarkArticleReadUseCase>(),
+        ));
     gh.factory<_i621.AddTransactionCubit>(() => _i621.AddTransactionCubit(
           gh<_i198.CreateTransactionUseCase>(),
           gh<_i268.GetCategoriesUseCase>(),

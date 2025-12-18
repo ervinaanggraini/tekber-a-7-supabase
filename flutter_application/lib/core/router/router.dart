@@ -10,6 +10,12 @@ import 'package:flutter_application/features/onboarding/presentation/page/onboar
 import 'package:flutter_application/features/splash/presentation/page/splash_page.dart';
 import '../../features/auth/presentation/page/login_page.dart';
 import '../../features/chatbot/presentation/chat_screen.dart';
+import '../../features/budget/presentation/pages/budget_page.dart';
+import '../../features/savings_goal/presentation/pages/savings_goal_page.dart';
+import '../../features/financial_insights/presentation/pages/financial_insights_page.dart';
+import '../../features/notification/presentation/pages/notification_page.dart';
+import '../../features/ocr_receipt/presentation/pages/ocr_page.dart';
+import '../../features/education/presentation/pages/education_page.dart';
 
 final router = GoRouter(
   routes: [
@@ -69,5 +75,39 @@ final router = GoRouter(
         return ChatScreen(conversationId: conversationId);
       },
     ),
+    GoRoute(
+      name: Routes.budget.name,
+      path: Routes.budget.path,
+      builder: (context, state) => const BudgetPage(),
+    ),
+    GoRoute(
+      name: Routes.savingsGoal.name,
+      path: Routes.savingsGoal.path,
+      builder: (context, state) => const SavingsGoalPage(),
+    ),
+    GoRoute(
+      name: Routes.financialInsights.name,
+      path: Routes.financialInsights.path,
+      builder: (context, state) => const FinancialInsightsPage(),
+    ),
+    GoRoute(
+      name: Routes.notifications.name,
+      path: Routes.notifications.path,
+      builder: (context, state) => const NotificationPage(),
+    ),
+    GoRoute(
+      name: Routes.ocr.name,
+      path: Routes.ocr.path,
+      builder: (context, state) => const OcrPage(),
+    ),
+    GoRoute(
+      name: Routes.education.name,
+      path: Routes.education.path,
+      builder: (context, state) => const EducationPage(),
+    ),
   ],
 );
+
+
+
+
