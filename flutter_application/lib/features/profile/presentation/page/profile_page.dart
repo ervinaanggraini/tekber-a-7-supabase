@@ -185,6 +185,24 @@ class _ProfilePageState extends State<ProfilePage> {
                     },
                   ),
                   const Divider(height: 1),
+
+                  const ThemeModeSettingsTile(),
+                  const Divider(height: 1),
+                  
+                  _ProfileMenuItem(
+                    icon: Icons.notifications_outlined,
+                    title: 'Notification Settings',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const NotificationSettingsPage(),
+                      ),
+                    );
+                  },
+                ),
+                const Divider(height: 1),
+
                   const ThemeModeSettingsTile(),
                   // const Divider(height: 1),
                   _ProfileMenuItem(
@@ -202,13 +220,13 @@ class _ProfilePageState extends State<ProfilePage> {
                        );
                      },
                    ),
-                  // const Divider(height: 1),
-                  // _ProfileMenuItem(
-                  //   icon: Icons.forward_to_inbox,
-                  //   title: 'Email Support',
-                  //   subtitle: 'Tap here to contact over email',
-                  //   onTap: () => launchUrl(Uri.parse("mailto:${Urls.contactEmail}")),
-                  // ),
+                  const Divider(height: 1),
+                  _ProfileMenuItem(
+                  icon: Icons.forward_to_inbox,
+                  title: 'Email Support',
+                  subtitle: 'Tap here to contact over email',
+                  onTap: () => launchUrl(Uri.parse("mailto:${Urls.contactEmail}")),
+                  ),
                   const Divider(height: 1),
                   _ProfileMenuItem(
                     icon: Icons.description_outlined,
