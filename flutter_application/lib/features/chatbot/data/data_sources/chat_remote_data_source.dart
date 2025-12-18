@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/chat_conversation.dart';
@@ -129,15 +130,22 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
         final filePath = '$userId/$conversationId/$fileName';
 
-        if (imageFile is XFile) {
-          // Web: read bytes and upload
-          final bytes = await imageFile.readAsBytes();
-          await supabase.storage.from('chat-images').upload(filePath, bytes);
-        } else {
-          // Mobile: existing File handling
+        // Handle both File and XFile types
+        if (imageFile is File) {
+          // Mobile/Desktop: File type
           await supabase.storage.from('chat-images').upload(
             filePath,
             imageFile,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+            ),
+          );
+        } else {
+          // Web or XFile: convert to bytes
+          final bytes = await (imageFile as dynamic).readAsBytes();
+          await supabase.storage.from('chat-images').uploadBinary(
+            filePath,
+            bytes,
             fileOptions: const FileOptions(
               contentType: 'image/jpeg',
             ),
