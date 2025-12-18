@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'package:flutter_application/core/constants/app_colors.dart';
 import 'package:flutter_application/core/constants/spacings.dart';
 import 'package:flutter_application/core/router/routes.dart';
@@ -16,6 +17,9 @@ import 'package:flutter_application/features/analytics/presentation/page/analyti
 // import 'package:flutter_application/features/invest/presentation/pages/invest_page.dart';
 import 'package:flutter_application/features/transaction/presentation/pages/transaction_history_page.dart';
 import 'package:flutter_application/dependency_injection.dart';
+
+// Import Screen Misi
+// Pastikan path ini sesuai dengan struktur foldermu (screen vs screens)
 import 'package:flutter_application/features/gamification/screen/mission_screen.dart';
 
 class HomeContent extends StatelessWidget {
@@ -115,12 +119,13 @@ class _HomeContentView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header (Halo User)
+                    // --- HEADER (Halo User + Misi + Profile) ---
                     Padding(
                       padding: const EdgeInsets.all(Spacing.s16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          // Kiri: Halo + Email
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -148,23 +153,56 @@ class _HomeContentView extends StatelessWidget {
                               ),
                             ],
                           ),
-                          InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (context) => const ProfilePage()),
-                              );
-                            },
-                            child: const CircleAvatar(
-                              radius: 24,
-                              backgroundColor: AppColors.b93160,
-                              child: Icon(Icons.person, color: Colors.white, size: 28),
-                            ),
+                          
+                          // Kanan: Tombol Misi & Profil
+                          Row(
+                            children: [
+                              // 1. TOMBOL MISI (Kecil, Icon Saja)
+                              InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const MissionScreen()),
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withOpacity(0.15), // Background kuning transparan
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.stars_rounded, // Icon Bintang
+                                    color: Colors.amber, 
+                                    size: 26,
+                                  ),
+                                ),
+                              ),
+                              
+                              const SizedBox(width: 12), // Jarak antara Misi dan Profil
+
+                              // 2. TOMBOL PROFIL
+                              InkWell(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (context) => const ProfilePage()),
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(24),
+                                child: const CircleAvatar(
+                                  radius: 24,
+                                  backgroundColor: AppColors.b93160,
+                                  child: Icon(Icons.person, color: Colors.white, size: 28),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
                     
-                    // Cashflow Card
+                    // --- CASHFLOW CARD ---
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
                       child: Container(
@@ -246,23 +284,9 @@ class _HomeContentView extends StatelessWidget {
                             const SizedBox(height: Spacing.s16),
                             Row(
                               children: [
-                                _buildSummaryItem(
-                                  context, 
-                                  "Pengeluaran", 
-                                  cashflow?.totalExpense ?? 0, 
-                                  cashflow?.expensePercentage ?? 0, 
-                                  Icons.arrow_upward, 
-                                  Colors.red
-                                ),
+                                _buildSummaryItem(context, "Pengeluaran", cashflow?.totalExpense ?? 0, cashflow?.expensePercentage ?? 0, Icons.arrow_upward, Colors.red),
                                 const SizedBox(width: 8),
-                                _buildSummaryItem(
-                                  context, 
-                                  "Pemasukan", 
-                                  cashflow?.totalIncome ?? 0, 
-                                  cashflow?.incomePercentage ?? 0, 
-                                  Icons.arrow_downward, 
-                                  Colors.green
-                                ),
+                                _buildSummaryItem(context, "Pemasukan", cashflow?.totalIncome ?? 0, cashflow?.incomePercentage ?? 0, Icons.arrow_downward, Colors.green),
                               ],
                             ),
                           ],
@@ -272,61 +296,30 @@ class _HomeContentView extends StatelessWidget {
                     
                     const SizedBox(height: Spacing.s24),
                     
-                    // --- MENU ICONS (UPDATED: 1 BARIS ISI 5 RAPI) ---
+                    // --- MENU ICONS (BALIK JADI 4 ITEM) ---
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween, 
-                        crossAxisAlignment: CrossAxisAlignment.start, 
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          _MenuIcon(
-                            icon: Icons.chat_bubble_outline,
-                            label: "AI Chat",
-                            onTap: () => context.pushNamed(Routes.chat.name),
-                          ),
-                          _MenuIcon(
-                            icon: Icons.description_outlined,
-                            label: "Report",
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportsPage())),
-                          ),
-                          _MenuIcon(
-                            icon: Icons.analytics_outlined,
-                            label: "Analytics",
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AnalyticsPage())),
-                          ),
-                          // _MenuIcon(
-                          //   icon: Icons.savings_outlined,
-                          //   label: "Invest",
-                          //   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InvestPage())),
-                          // ),
-                          // Tombol Misi (Gamifikasi)
-                          _MenuIcon(
-                            icon: Icons.stars_rounded,
-                            label: "Misi",
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => const MissionScreen()),
-                              );
-                            },
-                          ),
+                          _MenuIcon(icon: Icons.chat_bubble_outline, label: "AI Chat", onTap: () => context.pushNamed(Routes.chat.name)),
+                          _MenuIcon(icon: Icons.description_outlined, label: "Report", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportsPage()))),
+                          _MenuIcon(icon: Icons.analytics_outlined, label: "Analytics", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AnalyticsPage()))),
+                        //  _MenuIcon(icon: Icons.savings_outlined, label: "Invest", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InvestPage()))),
                         ],
                       ),
                     ),
-                    // ------------------------------------------------
                     
                     const SizedBox(height: Spacing.s24),
                     
-                    // Transaksi Terakhir
+                    // --- TRANSAKSI TERAKHIR ---
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            "Transaksi Terakhir",
-                            style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.pink[200] : AppColors.b93160),
-                          ),
+                          Text("Transaksi Terakhir", style: GoogleFonts.poppins(fontSize: 18, fontWeight: FontWeight.bold, color: isDark ? Colors.pink[200] : AppColors.b93160)),
                           TextButton(
                             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const TransactionHistoryPage())),
                             child: Text('Lihat Semua', style: GoogleFonts.poppins(color: isDark ? Colors.pink[200] : AppColors.b93160)),
@@ -344,38 +337,126 @@ class _HomeContentView extends StatelessWidget {
                           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2))],
                         ),
                         child: transactions.isEmpty
-                            ? Padding(
-                                padding: const EdgeInsets.all(Spacing.s24),
-                                child: Center(child: Text("Belum ada transaksi", style: GoogleFonts.poppins(color: Colors.grey))),
-                              )
-                            : Column(
-                                children: transactions.take(5).map((transaction) {
+                            ? Padding(padding: const EdgeInsets.all(Spacing.s24), child: Center(child: Text("Belum ada transaksi", style: GoogleFonts.poppins(color: Colors.grey))))
+                            : Column(children: transactions.take(3).map((transaction) { 
                                   final isIncome = transaction.type == 'income';
                                   return ListTile(
                                     leading: Container(
                                       padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: isIncome ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Icon(
-                                        isIncome ? Icons.arrow_downward : Icons.arrow_upward,
-                                        color: isIncome ? Colors.green : Colors.red,
-                                        size: 20,
-                                      ),
+                                      decoration: BoxDecoration(color: isIncome ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1), shape: BoxShape.circle),
+                                      child: Icon(isIncome ? Icons.arrow_downward : Icons.arrow_upward, color: isIncome ? Colors.green : Colors.red, size: 20),
                                     ),
                                     title: Text(transaction.category.name, style: GoogleFonts.poppins(fontWeight: FontWeight.w600)),
                                     subtitle: Text(transaction.description ?? '', maxLines: 1, overflow: TextOverflow.ellipsis),
-                                    trailing: Text(
-                                      formatCurrency(transaction.amount),
-                                      style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: isIncome ? Colors.green : Colors.red),
-                                    ),
+                                    trailing: Text(formatCurrency(transaction.amount), style: GoogleFonts.poppins(fontWeight: FontWeight.bold, color: isIncome ? Colors.green : Colors.red)),
                                   );
-                                }).toList(),
-                              ),
+                                }).toList()),
                       ),
                     ),
-                    const SizedBox(height: 80), 
+                    
+                    const SizedBox(height: Spacing.s24),
+
+                    // --- BERITA TERBARU (GAMBAR ADARO) ---
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
+                      child: Row(
+                        children: [
+                          Text(
+                            "Berita terbaru",
+                            style: GoogleFonts.poppins(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.pink[200] : AppColors.b93160,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: Spacing.s16),
+                    
+                    // CARD BERITA BESAR (Bawah)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
+                      child: GestureDetector(
+                        onTap: () {
+                          // Klik berita --> Masuk ke InvestPage
+                          // Navigator.push(context, MaterialPageRoute(builder: (_) => const InvestPage()));
+                        },
+                        child: Container(
+                          width: double.infinity,
+                          height: 180,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.grey[800],
+                            image: const DecorationImage(
+                              // Gambar Tambang (Adaro vibes)
+                              image: NetworkImage("https://img.IDXChannel.com/images/idx/2024/10/25/adaro_energy.jpg"), 
+                              fit: BoxFit.cover,
+                            ),
+                            boxShadow: [
+                              BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 4)),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              // Gradient Overlay
+                              Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topCenter,
+                                    end: Alignment.bottomCenter,
+                                    colors: [Colors.transparent, Colors.black.withOpacity(0.85)],
+                                  ),
+                                ),
+                              ),
+                              // Teks Berita
+                              Positioned(
+                                bottom: 20,
+                                left: 20,
+                                right: 70,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "AADI vs ADRO",
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      "Batu Bara atau Energi Terbarukan, Mana Lebih Menarik?",
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              // Tombol Plus Pink
+                              Positioned(
+                                bottom: 20,
+                                right: 20,
+                                child: Container(
+                                  width: 44,
+                                  height: 44,
+                                  decoration: const BoxDecoration(
+                                    color: AppColors.b93160,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.add, color: Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
@@ -386,7 +467,6 @@ class _HomeContentView extends StatelessWidget {
     );
   }
 
-  // Helper widget untuk summary item
   Widget _buildSummaryItem(BuildContext context, String label, double amount, double percentage, IconData icon, Color color) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Expanded(
@@ -399,16 +479,9 @@ class _HomeContentView extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(children: [
-              Icon(icon, color: isDark ? color.withOpacity(0.7) : color, size: 16),
-              const SizedBox(width: 4),
-              Text(label, style: GoogleFonts.poppins(fontSize: 12, color: isDark ? color.withOpacity(0.7) : color)),
-            ]),
+            Row(children: [Icon(icon, color: isDark ? color.withOpacity(0.7) : color, size: 16), const SizedBox(width: 4), Text(label, style: GoogleFonts.poppins(fontSize: 12, color: isDark ? color.withOpacity(0.7) : color))]),
             const SizedBox(height: 4),
-            Text(
-              "• ${formatCurrency(amount)} (${percentage.toStringAsFixed(1)}%)",
-              style: GoogleFonts.poppins(fontSize: 11, color: isDark ? color.withOpacity(0.7) : color),
-            ),
+            Text("• ${formatCurrency(amount)} (${percentage.toStringAsFixed(1)}%)", style: GoogleFonts.poppins(fontSize: 11, color: isDark ? color.withOpacity(0.7) : color)),
           ],
         ),
       ),
@@ -416,62 +489,36 @@ class _HomeContentView extends StatelessWidget {
   }
 }
 
-// WIDGET MENU ICON DIPERKECIL AGAR MUAT 5
 class _MenuIcon extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback onTap;
 
-  const _MenuIcon({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const _MenuIcon({required this.icon, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     return GestureDetector(
       onTap: onTap,
       child: SizedBox(
-        width: 58, // Lebar dibatasi agar tidak melar
+        width: 58,
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 52,  // Icon diperkecil sedikit
+              width: 52,
               height: 52,
               decoration: BoxDecoration(
                 gradient: isDark ? null : AppColors.linier,
                 color: isDark ? Colors.grey[800] : null,
                 shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 6,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 6, offset: const Offset(0, 2))],
               ),
-              child: Icon(
-                icon, 
-                size: 24, // Icon lebih kecil
-                color: Colors.white
-              ),
+              child: Icon(icon, size: 24, color: Colors.white),
             ),
             const SizedBox(height: 6),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.poppins(
-                fontSize: 10, // Font diperkecil agar muat
-                fontWeight: FontWeight.w500,
-                color: isDark ? Colors.white : Colors.black87,
-              ),
-            ),
+            Text(label, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w500, color: isDark ? Colors.white : Colors.black87)),
           ],
         ),
       ),

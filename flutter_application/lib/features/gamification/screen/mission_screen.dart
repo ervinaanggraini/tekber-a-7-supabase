@@ -62,7 +62,7 @@ class _MissionScreenState extends State<MissionScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: const Text("Investasi", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: const Text("Mission", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
