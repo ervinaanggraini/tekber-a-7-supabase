@@ -301,13 +301,16 @@ class _HomeContentView extends StatelessWidget {
                     
                     const SizedBox(height: Spacing.s24),
                     
-                    // --- MENU ICONS (7 Items: AI Chat, Report, Analytics, Budget, Insights, Invest) ---
+                    // --- MENU ICONS (6 Items: AI Chat, Report, Analytics, Budget, Insights, Invest) ---
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
-                      child: Wrap(
-                        alignment: WrapAlignment.spaceAround,
-                        spacing: 12,
-                        runSpacing: 24,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final itemWidth = (constraints.maxWidth - 32) / 3; // 3 columns
+                          return Wrap(
+                            alignment: WrapAlignment.spaceBetween,
+                            spacing: 16,
+                            runSpacing: 20,
                         children: [
                           _MenuIcon(
                             icon: Icons.chat_bubble_outline,
@@ -362,6 +365,8 @@ class _HomeContentView extends StatelessWidget {
                             },
                           ),
                         ],
+                          );
+                        },
                       ),
                     ),
                     
@@ -553,26 +558,50 @@ class _MenuIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final iconSize = screenWidth > 600 ? 68.0 : 60.0;
+    final circleSize = screenWidth > 600 ? 60.0 : 52.0;
+    final iconInnerSize = screenWidth > 600 ? 28.0 : 26.0;
+    final fontSize = screenWidth > 600 ? 11.0 : 10.0;
+    
     return GestureDetector(
       onTap: onTap,
-      child: SizedBox(
-        width: 58,
+      child: Container(
+        width: iconSize,
+        padding: const EdgeInsets.symmetric(vertical: 4),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: circleSize,
+              height: circleSize,
               decoration: BoxDecoration(
                 gradient: isDark ? null : AppColors.linier,
                 color: isDark ? Colors.grey[800] : null,
                 shape: BoxShape.circle,
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 6, offset: const Offset(0, 2))],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  )
+                ],
               ),
-              child: Icon(icon, size: 24, color: Colors.white),
+              child: Icon(icon, size: iconInnerSize, color: Colors.white),
             ),
-            const SizedBox(height: 6),
-            Text(label, textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: GoogleFonts.poppins(fontSize: 10, fontWeight: FontWeight.w500, color: isDark ? Colors.white : Colors.black87)),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.poppins(
+                fontSize: fontSize,
+                fontWeight: FontWeight.w500,
+                color: isDark ? Colors.white : Colors.black87,
+                height: 1.2,
+              ),
+            ),
           ],
         ),
       ),
