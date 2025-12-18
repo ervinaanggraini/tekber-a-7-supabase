@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import '../entities/chat_conversation.dart';
 import '../entities/chat_message.dart';
 
@@ -19,7 +19,8 @@ abstract class ChatRepository {
   Future<ChatMessage> sendMessage({
     required String conversationId,
     required String message,
-    File? imageFile,
+    // Accept either a dart:io File (mobile) or XFile / Uint8List for web
+    dynamic imageFile,
   });
 
   /// Delete a conversation

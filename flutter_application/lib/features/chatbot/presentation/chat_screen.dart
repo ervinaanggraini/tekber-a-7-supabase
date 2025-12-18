@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import '../../../core/constants/app_colors.dart';
 import '../domain/entities/chat_conversation.dart';
 import '../domain/entities/chat_message.dart';
@@ -22,7 +22,7 @@ class _ChatScreenState extends State<ChatScreen> {
   final _messageController = TextEditingController();
   final _scrollController = ScrollController();
   final _imagePicker = ImagePicker();
-  File? _selectedImage;
+  XFile? _selectedImage;
 
   @override
   void initState() {
@@ -65,7 +65,7 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       if (image != null) {
         setState(() {
-          _selectedImage = File(image.path);
+          _selectedImage = image; // keep XFile for both web and mobile
         });
       }
     } catch (e) {
@@ -86,7 +86,7 @@ class _ChatScreenState extends State<ChatScreen> {
       );
       if (image != null) {
         setState(() {
-          _selectedImage = File(image.path);
+          _selectedImage = image; // keep XFile for both web and mobile
         });
       }
     } catch (e) {
@@ -1045,7 +1045,7 @@ class _MessageInput extends StatelessWidget {
   final VoidCallback onSend;
   final VoidCallback onPickImage;
   final VoidCallback onRemoveImage;
-  final File? selectedImage;
+  final XFile? selectedImage;
   final bool enabled;
 
   const _MessageInput({
@@ -1111,11 +1111,22 @@ class _MessageInput extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12.r),
-                      child: Image.file(
-                        selectedImage!,
-                        height: 150.h,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
+                      child: FutureBuilder<Uint8List>(
+                        future: selectedImage!.readAsBytes(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                            return Image.memory(
+                              snapshot.data!,
+                              height: 150.h,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            );
+                          }
+                          return SizedBox(
+                            height: 150.h,
+                            child: Center(child: SizedBox(width: 24, height: 24, child: CircularProgressIndicator())),
+                          );
+                        },
                       ),
                     ),
                     Positioned(

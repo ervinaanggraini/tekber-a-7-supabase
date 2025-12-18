@@ -11,6 +11,7 @@ import '../utils/transaction_export_generator.dart';
 import '../utils/transaction_pdf_generator.dart';
 import '../../../reports/presentation/utils/export_dialog.dart';
 import '../../domain/entities/transaction.dart';
+import '../../../transactions/domain/repositories/transaction_repository.dart';
 import '../bloc/transaction_bloc.dart';
 import 'add_transaction_page.dart';
 
@@ -403,7 +404,7 @@ class _TransactionHistoryViewState extends State<_TransactionHistoryView> {
             ),
           ),
           subtitle: Text(
-            '${transaction.categoryName} • ${DateFormat('HH:mm').format(transaction.date)}',
+            '${transaction.categoryName} • ${DateFormat('HH:mm').format(transaction.date)}${transaction.itemsCount != null && transaction.itemsCount! > 0 ? ' • ${transaction.itemsCount} item' : ''}',
             style: GoogleFonts.poppins(
               fontSize: 11.sp,
               color: isDark ? Colors.grey[400] : Colors.grey[600],
@@ -412,6 +413,13 @@ class _TransactionHistoryViewState extends State<_TransactionHistoryView> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              if (transaction.itemsCount != null && transaction.itemsCount! > 0) ...[
+                IconButton(
+                  onPressed: () => _showTransactionItems(transaction.id),
+                  icon: Icon(Icons.list_alt, size: 20.sp, color: isDark ? Colors.grey[300] : Colors.grey[700]),
+                  tooltip: 'Lihat item struk',
+                ),
+              ],
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -448,6 +456,52 @@ class _TransactionHistoryViewState extends State<_TransactionHistoryView> {
         ),
       ),
     );
+  }
+
+  Future<void> _showTransactionItems(String transactionId) async {
+    try {
+      final repo = getIt<TransactionRepository>();
+      final tx = await repo.getTransactionById(transactionId);
+      final items = tx.items ?? [];
+
+      if (items.isEmpty) {
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text('Item struk'),
+            content: Text('Tidak ada item yang tercatat.'),
+            actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('Tutup'))],
+          ),
+        );
+        return;
+      }
+
+      await showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Item struk'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                final it = items[index];
+                return ListTile(
+                  title: Text(it.name),
+                  subtitle: Text('x${it.quantity} • ${_formatCurrency(it.price)}'),
+                );
+              },
+              separatorBuilder: (_, __) => const Divider(),
+              itemCount: items.length,
+            ),
+          ),
+          actions: [TextButton(onPressed: () => Navigator.pop(context), child: Text('Tutup'))],
+        ),
+      );
+    } catch (e) {
+      print('Failed to fetch transaction items: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal mengambil item struk')));
+    }
   }
 
   String _formatDateHeader(DateTime date) {

@@ -54,6 +54,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       receiptImageUrl: transaction.receiptImageUrl,
       merchantName: transaction.merchantName,
       createdAt: transaction.createdAt,
+      items: transaction.items,
     );
     
     return await remoteDataSource.createTransaction(model);
@@ -75,6 +76,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
       receiptImageUrl: transaction.receiptImageUrl,
       merchantName: transaction.merchantName,
       createdAt: transaction.createdAt,
+      items: transaction.items,
     );
     
     return await remoteDataSource.updateTransaction(model);
@@ -88,5 +90,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
   @override
   Future<List<Category>> getCategories({String? type}) async {
     return await remoteDataSource.getCategories(type: type);
+  }
+
+  @override
+  Future<Transaction> getTransactionById(String id) async {
+    return await remoteDataSource.getTransactionById(id);
   }
 }

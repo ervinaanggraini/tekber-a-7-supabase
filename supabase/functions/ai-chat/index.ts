@@ -269,7 +269,8 @@ serve(async (req: Request) => {
     if (imageUrl) userMessageData.image_url = imageUrl
     
     console.log('💾 Saving user message:', userMessageData)
-    
+
+    // Insert user message (no OCR auto-processing)
     await supabase.from('chat_messages').insert(userMessageData)
 
     // Save AI response

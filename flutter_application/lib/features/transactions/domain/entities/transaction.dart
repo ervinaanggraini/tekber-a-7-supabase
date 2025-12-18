@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_application/features/transactions/domain/entities/category.dart';
+import 'package:flutter_application/features/transactions/domain/entities/transaction_item.dart';
 
 class Transaction extends Equatable {
   final String id;
@@ -15,6 +16,7 @@ class Transaction extends Equatable {
   final String? receiptImageUrl;
   final String? merchantName;
   final DateTime createdAt;
+  final List<TransactionItem>? items;
 
   const Transaction({
     required this.id,
@@ -30,7 +32,12 @@ class Transaction extends Equatable {
     this.receiptImageUrl,
     this.merchantName,
     required this.createdAt,
+    this.items,
   });
+
+  DateTime get date => transactionDate;
+  String get categoryName => category.name;
+  int? get itemsCount => items?.length;
 
   @override
   List<Object?> get props => [
@@ -47,5 +54,6 @@ class Transaction extends Equatable {
         receiptImageUrl,
         merchantName,
         createdAt,
+        items,
       ];
 }

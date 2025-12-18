@@ -41,6 +41,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
           description: t.description ?? '',
           date: t.transactionDate,
           createdAt: t.createdAt,
+          itemsCount: t.items?.length,
         );
       }).toList();
       

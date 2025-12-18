@@ -2,6 +2,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:injectable/injectable.dart';
 import 'package:flutter_application/features/transactions/data/models/transaction_model.dart';
 import 'package:flutter_application/features/transactions/data/models/category_model.dart';
+import 'package:flutter_application/features/transactions/domain/entities/transaction_item.dart';
 
 abstract class TransactionRemoteDataSource {
   Future<List<TransactionModel>> getRecentTransactions({int limit = 10});
@@ -9,6 +10,7 @@ abstract class TransactionRemoteDataSource {
   Future<TransactionModel> createTransaction(TransactionModel transaction);
   Future<TransactionModel> updateTransaction(TransactionModel transaction);
   Future<void> deleteTransaction(String transactionId);
+  Future<TransactionModel> getTransactionById(String id);
   Future<List<CategoryModel>> getCategories({String? type});
 }
 
@@ -26,17 +28,37 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
         throw Exception('User not authenticated');
       }
 
-      final response = await supabaseClient
-          .from('transactions')
-          .select('*, category:categories(*)')
-          .eq('user_id', userId)
-          .order('transaction_date', ascending: false)
-          .order('created_at', ascending: false)
-          .limit(limit);
+      try {
+        final response = await supabaseClient
+            .from('transactions')
+            .select('*, category:categories(*), items:transaction_items(*)')
+            .eq('user_id', userId)
+            .order('transaction_date', ascending: false)
+            .order('created_at', ascending: false)
+            .limit(limit);
 
-      return (response as List)
-          .map((json) => TransactionModel.fromJson(json as Map<String, dynamic>))
-          .toList();
+        return (response as List)
+            .map((json) => TransactionModel.fromJson(json as Map<String, dynamic>))
+            .toList();
+      } catch (e) {
+        // If the DB has no relationship for transaction_items yet (migrations not applied),
+        // fall back to fetching without items to allow the app to run in dev.
+        try {
+          final response = await supabaseClient
+              .from('transactions')
+              .select('*, category:categories(*)')
+              .eq('user_id', userId)
+              .order('transaction_date', ascending: false)
+              .order('created_at', ascending: false)
+              .limit(limit);
+
+          return (response as List)
+              .map((json) => TransactionModel.fromJson(json as Map<String, dynamic>))
+              .toList();
+        } catch (e2) {
+          throw Exception('Failed to fetch transactions: $e2');
+        }
+      }
     } catch (e) {
       throw Exception('Failed to fetch transactions: $e');
     }
@@ -103,11 +125,37 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
           .select('*, category:categories(*)')
           .single();
 
-      return TransactionModel.fromJson(response);
+      final created = TransactionModel.fromJson(response as Map<String, dynamic>);
+
+      // Insert items if provided
+      if (transaction.items != null && transaction.items!.isNotEmpty) {
+        try {
+          final itemsToInsert = transaction.items!.map((it) => {
+            'transaction_id': created.id,
+            'name': (it as TransactionItem).name,
+            'quantity': (it as TransactionItem).quantity,
+            'price': (it as TransactionItem).price,
+          }).toList();
+          await supabaseClient.from('transaction_items').insert(itemsToInsert);
+        } catch (e) {
+          // ignore item insert errors
+        }
+      }
+
+      // Re-fetch the created transaction including items
+      final refetched = await supabaseClient
+          .from('transactions')
+          .select('*, category:categories(*), items:transaction_items(*)')
+          .eq('id', created.id)
+          .single();
+
+      return TransactionModel.fromJson(refetched as Map<String, dynamic>);
     } catch (e) {
       throw Exception('Failed to create transaction: $e');
     }
   }
+
+
 
   @override
   Future<TransactionModel> updateTransaction(TransactionModel transaction) async {
@@ -176,6 +224,25 @@ class TransactionRemoteDataSourceImpl implements TransactionRemoteDataSource {
           .toList();
     } catch (e) {
       throw Exception('Failed to fetch categories: $e');
+    }
+  }
+
+  // New: fetch a single transaction including its items
+  Future<TransactionModel> getTransactionById(String id) async {
+    try {
+      final userId = supabaseClient.auth.currentUser?.id;
+      if (userId == null) throw Exception('User not authenticated');
+
+      final response = await supabaseClient
+          .from('transactions')
+          .select('*, category:categories(*), items:transaction_items(*)')
+          .eq('id', id)
+          .eq('user_id', userId)
+          .single();
+
+      return TransactionModel.fromJson(response as Map<String, dynamic>);
+    } catch (e) {
+      throw Exception('Failed to fetch transaction: $e');
     }
   }
 }

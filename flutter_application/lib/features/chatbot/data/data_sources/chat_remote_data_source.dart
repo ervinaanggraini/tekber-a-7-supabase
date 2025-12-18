@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../domain/entities/chat_conversation.dart';
 import '../utils/transaction_parser.dart';
@@ -13,7 +13,7 @@ abstract class ChatRemoteDataSource {
   Future<ChatMessageModel> sendMessage({
     required String conversationId,
     required String message,
-    File? imageFile,
+    dynamic imageFile,
   });
   Future<void> deleteConversation(String conversationId);
   Future<void> archiveConversation(String conversationId, bool archived);
@@ -112,7 +112,7 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
   Future<ChatMessageModel> sendMessage({
     required String conversationId,
     required String message,
-    File? imageFile,
+    dynamic imageFile,
   }) async {
     print('🔵 Sending message to conversation: $conversationId');
     print('📝 Message: $message');
@@ -128,15 +128,22 @@ class ChatRemoteDataSourceImpl implements ChatRemoteDataSource {
         
         final fileName = '${DateTime.now().millisecondsSinceEpoch}.jpg';
         final filePath = '$userId/$conversationId/$fileName';
-        
-        await supabase.storage.from('chat-images').upload(
-          filePath,
-          imageFile,
-          fileOptions: const FileOptions(
-            contentType: 'image/jpeg',
-          ),
-        );
-        
+
+        if (imageFile is XFile) {
+          // Web: read bytes and upload
+          final bytes = await imageFile.readAsBytes();
+          await supabase.storage.from('chat-images').upload(filePath, bytes);
+        } else {
+          // Mobile: existing File handling
+          await supabase.storage.from('chat-images').upload(
+            filePath,
+            imageFile,
+            fileOptions: const FileOptions(
+              contentType: 'image/jpeg',
+            ),
+          );
+        }
+
         imageUrl = supabase.storage.from('chat-images').getPublicUrl(filePath);
         print('✅ Image uploaded: $imageUrl');
       } catch (e) {

@@ -1,5 +1,6 @@
 import 'package:flutter_application/features/transactions/domain/entities/transaction.dart';
 import 'package:flutter_application/features/transactions/data/models/category_model.dart';
+import 'package:flutter_application/features/transactions/data/models/transaction_item_model.dart';
 
 class TransactionModel extends Transaction {
   const TransactionModel({
@@ -16,6 +17,7 @@ class TransactionModel extends Transaction {
     super.receiptImageUrl,
     super.merchantName,
     required super.createdAt,
+    super.items,
   });
 
   factory TransactionModel.fromJson(Map<String, dynamic> json) {
@@ -35,6 +37,9 @@ class TransactionModel extends Transaction {
       receiptImageUrl: json['receipt_image_url'] as String?,
       merchantName: json['merchant_name'] as String?,
       createdAt: DateTime.parse(json['created_at'] as String),
+      items: json['items'] != null
+          ? (json['items'] as List).map((it) => TransactionItemModel.fromJson(it as Map<String, dynamic>)).toList()
+          : null,
     );
   }
 
@@ -56,6 +61,18 @@ class TransactionModel extends Transaction {
     // Only include id if it's not empty (for updates)
     if (id.isNotEmpty) {
       json['id'] = id;
+    }
+
+    // Include items if present
+    if (items != null) {
+      json['items'] = items!.map((it) {
+        if (it is TransactionItemModel) return it.toJson();
+        return {
+          'name': it.name,
+          'quantity': it.quantity,
+          'price': it.price,
+        };
+      }).toList();
     }
     
     return json;

@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 import '../../domain/entities/chat_conversation.dart';
 import '../../domain/entities/chat_message.dart';
 import '../../domain/repositories/chat_repository.dart';
@@ -33,7 +33,7 @@ class ChatRepositoryImpl implements ChatRepository {
   Future<ChatMessage> sendMessage({
     required String conversationId,
     required String message,
-    File? imageFile,
+    dynamic imageFile,
   }) async {
     return await remoteDataSource.sendMessage(
       conversationId: conversationId,

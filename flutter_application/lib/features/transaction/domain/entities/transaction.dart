@@ -10,6 +10,7 @@ class Transaction extends Equatable {
   final String description;
   final DateTime date;
   final DateTime createdAt;
+  final int? itemsCount;
 
   const Transaction({
     required this.id,
@@ -21,6 +22,7 @@ class Transaction extends Equatable {
     required this.description,
     required this.date,
     required this.createdAt,
+    this.itemsCount,
   });
 
   @override
@@ -34,5 +36,6 @@ class Transaction extends Equatable {
         description,
         date,
         createdAt,
+        itemsCount,
       ];
 }

@@ -9,4 +9,5 @@ abstract class TransactionRepository {
   Future<Transaction> updateTransaction(Transaction transaction);
   Future<void> deleteTransaction(String transactionId);
   Future<List<Category>> getCategories({String? type});
+  Future<Transaction> getTransactionById(String id);
 }
