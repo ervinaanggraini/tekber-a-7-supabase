@@ -21,6 +21,13 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
   // warna toggle konsisten
   final Color _toggleColor = AppColors.b93160;
 
+  // =====================================================
+  // >>> NIH DISINI <<<
+  // master notification status (enable / disable semua)
+  bool get _notificationsEnabled =>
+      _settings?.enableNotifications ?? false;
+  // =====================================================
+
   @override
   void initState() {
     super.initState();
@@ -84,6 +91,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
       ),
       body: ListView(
         children: [
+          // ================= MASTER SWITCH =================
           SwitchListTile(
             title: const Text("Enable Notifications"),
             value: _settings!.enableNotifications,
@@ -91,26 +99,34 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
             activeTrackColor: _toggleColor.withOpacity(0.4),
             onChanged: (v) => _update('enable_notifications', v),
           ),
+
+          // ================= CHILD SWITCHES =================
           SwitchListTile(
             title: const Text("Daily Reminders"),
             value: _settings!.enableDailyReminders,
             activeColor: _toggleColor,
             activeTrackColor: _toggleColor.withOpacity(0.4),
-            onChanged: (v) => _update('enable_daily_reminders', v),
+            onChanged: _notificationsEnabled
+                ? (v) => _update('enable_daily_reminders', v)
+                : null,
           ),
           SwitchListTile(
             title: const Text("Mission Alerts"),
             value: _settings!.enableMissionAlerts,
             activeColor: _toggleColor,
             activeTrackColor: _toggleColor.withOpacity(0.4),
-            onChanged: (v) => _update('enable_mission_alerts', v),
+            onChanged: _notificationsEnabled
+                ? (v) => _update('enable_mission_alerts', v)
+                : null,
           ),
           SwitchListTile(
             title: const Text("Budget Alerts"),
             value: _settings!.enableBudgetAlerts,
             activeColor: _toggleColor,
             activeTrackColor: _toggleColor.withOpacity(0.4),
-            onChanged: (v) => _update('enable_budget_alerts', v),
+            onChanged: _notificationsEnabled
+                ? (v) => _update('enable_budget_alerts', v)
+                : null,
           ),
         ],
       ),
