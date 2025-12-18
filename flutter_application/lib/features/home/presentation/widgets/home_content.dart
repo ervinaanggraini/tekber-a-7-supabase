@@ -301,11 +301,9 @@ class _HomeContentView extends StatelessWidget {
                     
                     const SizedBox(height: Spacing.s24),
                     
-<<<<<<< HEAD
-                    // --- MENU ICONS (5 Items: AI Chat, Report, Analytics, Invest, Misi) ---
+                    // --- MENU ICONS (7 Items: AI Chat, Report, Analytics, Budget, Insights, Invest) ---
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
-<<<<<<< HEAD
                       child: Wrap(
                         alignment: WrapAlignment.spaceAround,
                         spacing: 12,
@@ -340,14 +338,6 @@ class _HomeContentView extends StatelessWidget {
                                   builder: (context) => const AnalyticsPage(),
                                 ),
                               );
-                            },
-                          ),
-                          _MenuIcon(
-                            icon: Icons.trending_up_outlined,
-                            label: "Invest",
-                            onTap: () {
-                              // TODO: Ganti dengan route Invest jika sudah ada
-                              // context.pushNamed(Routes.invest.name);
                             },
                           ),
                           _MenuIcon(
