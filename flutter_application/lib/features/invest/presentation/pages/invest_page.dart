@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_application/core/router/routes.dart';
 
+// Import Core
+import 'package:flutter_application/core/router/routes.dart';
 import 'package:flutter_application/core/constants/app_colors.dart';
-import 'package:flutter_application/features/invest/presentation/pages/education_page.dart';
+
+// Import Features
+import 'package:flutter_application/features/invest/data/data_source/invest_remote_data_source.dart';
+import 'package:flutter_application/features/invest/data/repositories/invest_repository_impl.dart';
+import 'package:flutter_application/features/invest/presentation/cubit/invest_cubit.dart';
+import 'package:flutter_application/features/invest/presentation/cubit/invest_state.dart';
 import 'package:flutter_application/features/invest/presentation/widgets/stock_card.dart';
 
-import '../../data/data_source/invest_remote_data_source.dart';
-import '../../data/repositories/invest_repository_impl.dart';
-import '../../domain/repositories/invest_repository.dart';
-import '../cubit/invest_cubit.dart';
-import '../cubit/invest_state.dart';
+// Jika EducationPage sudah ada, bisa di-uncomment
+// import 'package:flutter_application/features/invest/presentation/pages/education_page.dart'; 
 
 class InvestPage extends StatelessWidget {
   const InvestPage({super.key});
@@ -22,6 +25,7 @@ class InvestPage extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return BlocProvider(
+      // Inisialisasi Cubit dengan Repository & Data Source
       create: (_) => InvestCubit(
         InvestRepositoryImpl(
           InvestRemoteDataSourceImpl(),
@@ -37,7 +41,7 @@ class InvestPage extends StatelessWidget {
             elevation: 0,
             backgroundColor: Colors.transparent,
             leading: IconButton(
-              icon: Icon(Icons.arrow_back, color: AppColors.b93160),
+              icon: const Icon(Icons.arrow_back, color: AppColors.b93160),
               onPressed: () => Navigator.of(context).pop(),
             ),
             centerTitle: true,
@@ -50,37 +54,38 @@ class InvestPage extends StatelessWidget {
               ),
             ),
 
-            //MY PORTOFOLIO BUTTON
+            // TOMBOL PORTOFOLIO
             actions: [
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: TextButton.icon(
-                onPressed: () {
-                  context.pushNamed(Routes.portfolio.name);
-                },
-                icon: const Icon(
-                  Icons.pie_chart_outline,
-                  size: 18,
-                  color: AppColors.b93160,
-                ),
-                label: Text(
-                  'Portofolio',
-                  style: GoogleFonts.poppins(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: TextButton.icon(
+                  onPressed: () {
+                    context.pushNamed(Routes.portfolio.name);
+                  },
+                  icon: const Icon(
+                    Icons.pie_chart_outline,
+                    size: 18,
                     color: AppColors.b93160,
                   ),
-                ),
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                  label: Text(
+                    'Portofolio',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.b93160,
+                    ),
+                  ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
                     ),
                   ),
                 ),
               ),
             ],
 
+            // TAB BAR (Simulasi & Edukasi)
             bottom: TabBar(
               labelColor: AppColors.b93160,
               unselectedLabelColor: Colors.grey[400],
@@ -103,12 +108,15 @@ class InvestPage extends StatelessWidget {
           // ================= BODY =================
           body: const TabBarView(
             children: [
+              // TAB 1: Simulasi Pasar
               _MarketSimulationTab(),
 
-              // ⚠️ AMAN: tidak mengirim courseId kosong
+              // TAB 2: Materi Edukasi (Placeholder)
+              // Kalau EducationPage sudah siap, ganti widget di bawah ini dengan EducationPage()
               Center(
                 child: Text(
-                  'Pilih materi edukasi terlebih dahulu',
+                  'Materi Edukasi akan muncul di sini',
+                  style: TextStyle(color: Colors.grey),
                 ),
               ),
             ],
@@ -119,7 +127,7 @@ class InvestPage extends StatelessWidget {
   }
 }
 
-// ================= MARKET TAB =================
+// ================= WIDGET: TAB SIMULASI PASAR =================
 
 class _MarketSimulationTab extends StatelessWidget {
   const _MarketSimulationTab();
@@ -146,9 +154,11 @@ class _MarketSimulationTab extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
+              // Breaking News Card
               const _BreakingNewsCard(),
               const SizedBox(height: 20),
 
+              // List Saham
               ...state.stocks.map(
                 (stock) => StockCard(stock: stock),
               ),
@@ -166,7 +176,7 @@ class _MarketSimulationTab extends StatelessWidget {
   }
 }
 
-// ================= BREAKING NEWS =================
+// ================= WIDGET: BREAKING NEWS CARD =================
 
 class _BreakingNewsCard extends StatelessWidget {
   const _BreakingNewsCard();
@@ -211,7 +221,7 @@ class _BreakingNewsCard extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Keuntungan yang lebih tinggi dari perkiraan dan prospek yang kuat '
-            'mendorong investor untuk membentuk saham teknologi',
+            'mendorong investor untuk memborong saham teknologi',
             style: GoogleFonts.poppins(
               fontSize: 11,
               color: Colors.grey[600],
