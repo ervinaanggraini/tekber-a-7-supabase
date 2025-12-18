@@ -4,33 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_application/core/router/routes.dart';
 import 'package:flutter_application/features/auth/presentation/bloc/auth_bloc.dart';
 
-class SplashPage extends StatefulWidget {
+class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
-
-  @override
-  State<SplashPage> createState() => _SplashPageState();
-}
-
-class _SplashPageState extends State<SplashPage> {
-  @override
-  void initState() {
-    super.initState();
-    _checkNavigation();
-  }
-
-  void _checkNavigation() async {
-    // Add a small delay to show splash screen
-    await Future.delayed(const Duration(seconds: 2));
-    if (!mounted) return;
-
-    // Check auth state
-    final authState = context.read<AuthBloc>().state;
-    if (authState is AuthUserAuthenticated) {
-      if (mounted) context.go(Routes.home.path);
-    } else if (authState is AuthUserUnauthenticated) {
-      if (mounted) context.go(Routes.onboarding.path);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

@@ -66,6 +66,14 @@ enum Routes {
   education(
     name: "education",
     path: "/education",
+  ),
+  invest(
+    name: "invest",
+    path: "/invest",
+  ),
+  portfolio(
+    name: 'portfolio',
+    path: '/portfolio',
   );
 
 
