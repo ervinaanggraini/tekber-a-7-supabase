@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_application/features/gamification/services/gamification_service.dart';
 import 'package:flutter_application/features/gamification/models/gamification_models.dart';
 
@@ -11,13 +12,14 @@ class MissionScreen extends StatefulWidget {
 }
 
 class _MissionScreenState extends State<MissionScreen> {
+  // Service tetap kita inisialisasi, tapi nanti kita bypass datanya
   final GamificationService _service = GetIt.I<GamificationService>();
   
   UserProfile? _userProfile;
   List<UserMission> _missions = [];
   bool _isLoading = true;
 
-  // Warna-warna sesuai desain Figma
+  // Warna sesuai Figma
   final Color _primaryPink = const Color(0xFFFF6B6B);
   final Color _softPinkBg = const Color(0xFFFFF0F3);
   final Color _cardGradient1 = const Color(0xFFFF9A9E);
@@ -26,32 +28,124 @@ class _MissionScreenState extends State<MissionScreen> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadMockData(); // PANGGIL DATA PALSU BIAR MUNCUL
   }
 
-  Future<void> _loadData() async {
+  // --- FUNGSI DATA DUMMY (MOCKUP) ---
+  Future<void> _loadMockData() async {
     setState(() => _isLoading = true);
-    try {
-      final profile = await _service.getUserProfile();
-      final missions = await _service.getUserMissions();
-      setState(() {
-        _userProfile = profile;
-        _missions = missions;
-        _isLoading = false;
-      });
-    } catch (e) {
-      setState(() => _isLoading = false);
-    }
+    
+    // Simulasi loading sebentar biar kerasa 'real'
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    setState(() {
+      // 1. DATA PROFIL PALSU
+      _userProfile = UserProfile(
+        id: 'user-123',
+        level: 1,
+        totalXp: 20, // Ceritanya baru dapet 20 XP
+        currentStreak: 3,
+        totalPoints: 0,
+      );
+
+      // 2. DATA MISI PALSU (Sesuai Desain Figma)
+      _missions = [
+        // Misi 1: Selesai (Bisa Klaim)
+        UserMission(
+          id: 'm1',
+          missionId: 'master-1',
+          currentProgress: 1,
+          status: 'completed', // Status completed -> Tombol Klaim Muncul
+          missionDetails: Mission(
+            id: 'master-1',
+            title: 'Langkah Pertama',
+            description: 'Lakukan pembelian aset pertamamu',
+            xpReward: 50,
+            requirementType: 'buy',
+            targetProgress: 1,
+          ),
+        ),
+        // Misi 2: Progress (Setengah jalan)
+        UserMission(
+          id: 'm2',
+          missionId: 'master-2',
+          currentProgress: 1, // Baru 1 dari 2
+          status: 'in_progress',
+          missionDetails: Mission(
+            id: 'master-2',
+            title: 'Diversifikasi Awal',
+            description: 'Miliki minimal 2 jenis aset berbeda',
+            xpReward: 100,
+            requirementType: 'assets',
+            targetProgress: 2,
+          ),
+        ),
+        // Misi 3: Masih Awal
+        UserMission(
+          id: 'm3',
+          missionId: 'master-3',
+          currentProgress: 2, // Baru 2 dari 5
+          status: 'in_progress',
+          missionDetails: Mission(
+            id: 'master-3',
+            title: 'Trader Aktif',
+            description: 'Lakukan total 5 transaksi (beli/jual)',
+            xpReward: 150,
+            requirementType: 'transaction',
+            targetProgress: 5,
+          ),
+        ),
+         // Misi 4: Masih 0
+        UserMission(
+          id: 'm4',
+          missionId: 'master-4',
+          currentProgress: 0, 
+          status: 'in_progress',
+          missionDetails: Mission(
+            id: 'master-4',
+            title: 'Calon Sultan',
+            description: 'Raih total nilai portofolio Rp 120 Juta',
+            xpReward: 250,
+            requirementType: 'balance',
+            targetProgress: 1,
+          ),
+        ),
+      ];
+      
+      _isLoading = false;
+    });
   }
 
   Future<void> _handleClaim(UserMission mission) async {
-    await _service.claimReward(mission);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Hore! +${mission.missionDetails?.xpReward} XP")),
-      );
-    }
-    _loadData();
+    // Efek Klaim Palsu
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text("Hore! +${mission.missionDetails?.xpReward} XP"),
+        backgroundColor: Colors.green,
+      ),
+    );
+    
+    // Update UI biar tombol klaim hilang setelah diklik
+    setState(() {
+       final index = _missions.indexWhere((m) => m.id == mission.id);
+       if (index != -1) {
+         _missions[index] = UserMission(
+           id: mission.id,
+           missionId: mission.missionId,
+           currentProgress: mission.currentProgress,
+           status: 'claimed',
+           missionDetails: mission.missionDetails,
+         );
+       }
+
+       _userProfile = UserProfile(
+         id: _userProfile!.id,
+         level: _userProfile!.level,
+         totalXp: _userProfile!.totalXp + (mission.missionDetails?.xpReward ?? 0),
+         currentStreak: _userProfile!.currentStreak,
+         totalPoints: _userProfile!.totalPoints
+       );
+    });
   }
 
   @override
@@ -62,7 +156,7 @@ class _MissionScreenState extends State<MissionScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        title: const Text("Mission", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+        title: Text("Mission", style: GoogleFonts.poppins(color: Colors.black, fontWeight: FontWeight.bold)),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.black),
           onPressed: () => Navigator.pop(context),
@@ -75,26 +169,20 @@ class _MissionScreenState extends State<MissionScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. HEADER PROFIL (Investor Pemula)
+                  // 1. HEADER PROFIL
                   _buildProfileHeader(),
                   
                   const SizedBox(height: 24),
 
-                  // 2. KARTU PORTOFOLIO (Rp100.000.000)
+                  // 2. KARTU PORTOFOLIO
                   _buildPortfolioCard(),
 
                   const SizedBox(height: 24),
                   
                   // 3. JUDUL MISI
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Misi & Tantangan",
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      // Filter button kecil jika perlu
-                    ],
+                  Text(
+                    "Misi & Tantangan",
+                    style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
 
@@ -109,37 +197,31 @@ class _MissionScreenState extends State<MissionScreen> {
   Widget _buildProfileHeader() {
     if (_userProfile == null) return const SizedBox();
 
-    // Hitung progress XP (0.0 sampai 1.0)
-    int nextLevelXp = _userProfile!.level * 100;
-    int currentLevelBaseXp = (_userProfile!.level - 1) * 100;
-    int xpInThisLevel = _userProfile!.totalXp - currentLevelBaseXp;
-    double progress = xpInThisLevel / 100.0;
-    if (progress > 1.0) progress = 1.0;
+    int targetXp = 100; // Target XP level 1
+    double progress = _userProfile!.totalXp / targetXp;
 
     return Row(
       children: [
-        // Avatar
         CircleAvatar(
           radius: 28,
           backgroundColor: _softPinkBg,
-          child: Image.asset('assets/icons/app_icon.png', width: 30, errorBuilder: (c,o,s) => Icon(Icons.person, color: _primaryPink)),
+          child: Icon(Icons.person, color: _primaryPink, size: 30),
         ),
         const SizedBox(width: 16),
         
-        // Info Level & XP
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                "Investor Pemula", // Bisa diganti logic title berdasarkan level
-                style: TextStyle(color: _primaryPink, fontWeight: FontWeight.bold, fontSize: 16),
+                "Investor Pemula", 
+                style: GoogleFonts.poppins(color: _primaryPink, fontWeight: FontWeight.bold, fontSize: 16),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Level ${_userProfile!.level}", style: const TextStyle(fontSize: 12, color: Colors.orange)),
-                  Text("$xpInThisLevel/100 XP", style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                  Text("Level ${_userProfile!.level}", style: GoogleFonts.poppins(fontSize: 12, color: Colors.orange)),
+                  Text("${_userProfile!.totalXp}/$targetXp XP", style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey)),
                 ],
               ),
               const SizedBox(height: 6),
@@ -181,14 +263,14 @@ class _MissionScreenState extends State<MissionScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             "Total Nilai Portofolio",
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+            style: GoogleFonts.poppins(color: Colors.white, fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 8),
-          const Text(
-            "Rp100.000.000,-", // Nanti bisa diambil dari TransactionService
-            style: TextStyle(
+          Text(
+            "Rp100.000.000,-", 
+            style: GoogleFonts.poppins(
               color: Colors.white, 
               fontSize: 28, 
               fontWeight: FontWeight.bold
@@ -201,9 +283,9 @@ class _MissionScreenState extends State<MissionScreen> {
               color: Colors.white.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Text(
+            child: Text(
               "↑ +Rp0 (0.00%)",
-              style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+              style: GoogleFonts.poppins(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
             ),
           ),
         ],
@@ -220,7 +302,7 @@ class _MissionScreenState extends State<MissionScreen> {
             children: [
               Icon(Icons.check_circle_outline, size: 60, color: Colors.grey[300]),
               const SizedBox(height: 10),
-              const Text("Belum ada misi aktif.", style: TextStyle(color: Colors.grey)),
+              Text("Belum ada misi aktif.", style: GoogleFonts.poppins(color: Colors.grey)),
             ],
           ),
         ),
@@ -233,7 +315,6 @@ class _MissionScreenState extends State<MissionScreen> {
         final isCompleted = mission.status == 'completed';
         final isClaimed = mission.status == 'claimed';
         
-        // Jangan tampilkan yang sudah diklaim (atau tampilkan di tab riwayat)
         if (isClaimed) return const SizedBox.shrink();
 
         return Container(
@@ -265,7 +346,7 @@ class _MissionScreenState extends State<MissionScreen> {
             ),
             title: Text(
               details?.title ?? "Misi",
-              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+              style: GoogleFonts.poppins(fontWeight: FontWeight.bold, fontSize: 14),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,17 +354,21 @@ class _MissionScreenState extends State<MissionScreen> {
                 const SizedBox(height: 4),
                 Text(
                   details?.description ?? "Lakukan tugas ini",
-                  style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                  style: GoogleFonts.poppins(fontSize: 12, color: Colors.grey[600]),
                 ),
                 if (!isCompleted) ...[
                   const SizedBox(height: 8),
-                  // Progress bar kecil untuk misi
                   LinearProgressIndicator(
                     value: (mission.currentProgress / (details?.targetProgress ?? 1)).clamp(0.0, 1.0),
                     backgroundColor: Colors.grey[100],
-                    color: Colors.green, // Warna hijau agar beda
+                    color: _primaryPink, 
                     minHeight: 4,
                   ),
+                  const SizedBox(height: 4),
+                  Text(
+                    "${mission.currentProgress}/${details?.targetProgress ?? 1}",
+                    style: GoogleFonts.poppins(fontSize: 10, color: Colors.grey),
+                  )
                 ]
               ],
             ),
@@ -296,11 +381,11 @@ class _MissionScreenState extends State<MissionScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       elevation: 0,
                     ),
-                    child: const Text("Klaim", style: TextStyle(fontSize: 12)),
+                    child: Text("Klaim", style: GoogleFonts.poppins(fontSize: 12, color: Colors.white)),
                   )
                 : Text(
                     "+${details?.xpReward} XP",
-                    style: TextStyle(color: Colors.green[700], fontWeight: FontWeight.bold, fontSize: 12),
+                    style: GoogleFonts.poppins(color: Colors.green[700], fontWeight: FontWeight.bold, fontSize: 12),
                   ),
           ),
         );
