@@ -467,17 +467,18 @@ class _HomeContentView extends StatelessWidget {
                             },
                           ),
                           _MenuIcon(
+                            icon: Icons.trending_up_outlined,
+                            label: "Invest",
+                            onTap: () {
+                              // TODO: Ganti dengan route Invest jika sudah ada
+                              // context.pushNamed(Routes.invest.name);
+                            },
+                          ),
+                          _MenuIcon(
                             icon: Icons.account_balance_wallet_outlined,
                             label: "Budget",
                             onTap: () {
                               context.pushNamed(Routes.budget.name);
-                            },
-                          ),
-                          _MenuIcon(
-                            icon: Icons.savings_outlined,
-                            label: "Savings",
-                            onTap: () {
-                              context.pushNamed(Routes.savingsGoal.name);
                             },
                           ),
                           _MenuIcon(
@@ -487,24 +488,9 @@ class _HomeContentView extends StatelessWidget {
                               context.pushNamed(Routes.financialInsights.name);
                             },
                           ),
-                          _MenuIcon(
-                            icon: Icons.receipt_long_outlined,
-                            label: "Scan Receipt",
-                            onTap: () {
-                              context.pushNamed(Routes.ocr.name);
-                            },
-                          ),
-                          _MenuIcon(
-                            icon: Icons.school_outlined,
-                            label: "Education",
-                            onTap: () {
-                              context.pushNamed(Routes.education.name);
-                            },
-                          ),
+                          // Savings & Education menu removed per request
                         ],
                       ),
-
-
                     ),
                     
                     const SizedBox(height: Spacing.s24),
