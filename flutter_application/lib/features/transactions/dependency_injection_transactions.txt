@@ -1,7 +1,0 @@
-// Dependencies untuk transactions feature akan diregister di dependency_injection.dart utama
-// File ini hanya placeholder untuk mengingatkan bahwa kita perlu register:
-// - TransactionRemoteDataSource & Impl
-// - TransactionRepository & Impl  
-// - GetRecentTransactionsUseCase
-// - GetCashflowSummaryUseCase
-// - HomeCubit

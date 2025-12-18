@@ -186,25 +186,40 @@ class _HomeContentView extends StatelessWidget {
                               ),
                             ],
                           ),
-                          InkWell(
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const ProfilePage(),
+                          Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  context.pushNamed(Routes.notifications.name);
+                                },
+                                icon: Icon(
+                                  Icons.notifications_outlined,
+                                  color: isDark ? Colors.pink[200] : AppColors.b93160,
                                 ),
-                              );
-                            },
-                            borderRadius: BorderRadius.circular(24),
-                            child: const CircleAvatar(
-                              radius: 24,
-                              backgroundColor: AppColors.b93160,
-                              child: Icon(
-                                Icons.person,
-                                color: Colors.white,
-                                size: 28,
                               ),
-                            ),
+                              const SizedBox(width: 8),
+                              InkWell(
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (context) => const ProfilePage(),
+                                    ),
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(24),
+                                child: const CircleAvatar(
+                                  radius: 24,
+                                  backgroundColor: AppColors.b93160,
+                                  child: Icon(
+                                    Icons.person,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
+
                         ],
                       ),
                     ),
@@ -415,8 +430,10 @@ class _HomeContentView extends StatelessWidget {
                     // Menu Icons
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      child: Wrap(
+                        alignment: WrapAlignment.spaceAround,
+                        spacing: 12,
+                        runSpacing: 24,
                         children: [
                           _MenuIcon(
                             icon: Icons.chat_bubble_outline,
@@ -450,23 +467,44 @@ class _HomeContentView extends StatelessWidget {
                             },
                           ),
                           _MenuIcon(
-                            icon: Icons.savings_outlined,
-                            label: "Invest",
+                            icon: Icons.account_balance_wallet_outlined,
+                            label: "Budget",
                             onTap: () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    'Fitur Invest sedang dalam pengembangan',
-                                    style: GoogleFonts.poppins(),
-                                  ),
-                                  behavior: SnackBarBehavior.floating,
-                                  duration: const Duration(seconds: 2),
-                                ),
-                              );
+                              context.pushNamed(Routes.budget.name);
+                            },
+                          ),
+                          _MenuIcon(
+                            icon: Icons.savings_outlined,
+                            label: "Savings",
+                            onTap: () {
+                              context.pushNamed(Routes.savingsGoal.name);
+                            },
+                          ),
+                          _MenuIcon(
+                            icon: Icons.lightbulb_outline,
+                            label: "Insights",
+                            onTap: () {
+                              context.pushNamed(Routes.financialInsights.name);
+                            },
+                          ),
+                          _MenuIcon(
+                            icon: Icons.receipt_long_outlined,
+                            label: "Scan Receipt",
+                            onTap: () {
+                              context.pushNamed(Routes.ocr.name);
+                            },
+                          ),
+                          _MenuIcon(
+                            icon: Icons.school_outlined,
+                            label: "Education",
+                            onTap: () {
+                              context.pushNamed(Routes.education.name);
                             },
                           ),
                         ],
                       ),
+
+
                     ),
                     
                     const SizedBox(height: Spacing.s24),
