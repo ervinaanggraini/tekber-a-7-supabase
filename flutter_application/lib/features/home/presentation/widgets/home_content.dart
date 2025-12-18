@@ -14,12 +14,8 @@ import 'package:flutter_application/features/transactions/presentation/cubit/add
 import 'package:flutter_application/features/transactions/presentation/widgets/add_transaction_dialog.dart';
 import 'package:flutter_application/features/reports/presentation/page/reports_page.dart';
 import 'package:flutter_application/features/analytics/presentation/page/analytics_page.dart';
-// import 'package:flutter_application/features/invest/presentation/pages/invest_page.dart';
 import 'package:flutter_application/features/transaction/presentation/pages/transaction_history_page.dart';
 import 'package:flutter_application/dependency_injection.dart';
-
-// Import Screen Misi
-// Pastikan path ini sesuai dengan struktur foldermu (screen vs screens)
 import 'package:flutter_application/features/gamification/screen/mission_screen.dart';
 
 class HomeContent extends StatelessWidget {
@@ -119,7 +115,7 @@ class _HomeContentView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // --- HEADER (Halo User + Misi + Profile) ---
+                    // --- HEADER (Halo User + TOMBOL MISI + Profile) ---
                     Padding(
                       padding: const EdgeInsets.all(Spacing.s16),
                       child: Row(
@@ -157,7 +153,7 @@ class _HomeContentView extends StatelessWidget {
                           // Kanan: Tombol Misi & Profil
                           Row(
                             children: [
-                              // 1. TOMBOL MISI (Kecil, Icon Saja)
+                              // 1. TOMBOL MISI (GAMIFIKASI) - KHUSUS BRANCH INI
                               InkWell(
                                 onTap: () {
                                   Navigator.push(
@@ -169,7 +165,7 @@ class _HomeContentView extends StatelessWidget {
                                 child: Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: Colors.amber.withOpacity(0.15), // Background kuning transparan
+                                    color: Colors.amber.withOpacity(0.15), // Kuning transparan
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -180,7 +176,7 @@ class _HomeContentView extends StatelessWidget {
                                 ),
                               ),
                               
-                              const SizedBox(width: 12), // Jarak antara Misi dan Profil
+                              const SizedBox(width: 12), // Jarak
 
                               // 2. TOMBOL PROFIL
                               InkWell(
@@ -296,7 +292,8 @@ class _HomeContentView extends StatelessWidget {
                     
                     const SizedBox(height: Spacing.s24),
                     
-                    // --- MENU ICONS (BALIK JADI 4 ITEM) ---
+                    // --- MENU ICONS (HANYA 3 BIAR GA CONFLICT SAMA INVEST) ---
+                    // Nanti branch Invest akan menambahkan menunya sendiri
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
                       child: Row(
@@ -306,7 +303,9 @@ class _HomeContentView extends StatelessWidget {
                           _MenuIcon(icon: Icons.chat_bubble_outline, label: "AI Chat", onTap: () => context.pushNamed(Routes.chat.name)),
                           _MenuIcon(icon: Icons.description_outlined, label: "Report", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const ReportsPage()))),
                           _MenuIcon(icon: Icons.analytics_outlined, label: "Analytics", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => const AnalyticsPage()))),
-                        //  _MenuIcon(icon: Icons.savings_outlined, label: "Invest", onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const InvestPage()))),
+                          // INVEST DIHILANGKAN DARI SINI
+                          // Biar aman pas merge. Nanti bisa ditambahin manual pas resolving conflict atau biarkan branch Invest yg handle.
+                           _MenuIcon(icon: Icons.more_horiz, label: "More", onTap: () {}), // Placeholder biar balance
                         ],
                       ),
                     ),
@@ -338,7 +337,7 @@ class _HomeContentView extends StatelessWidget {
                         ),
                         child: transactions.isEmpty
                             ? Padding(padding: const EdgeInsets.all(Spacing.s24), child: Center(child: Text("Belum ada transaksi", style: GoogleFonts.poppins(color: Colors.grey))))
-                            : Column(children: transactions.take(3).map((transaction) { 
+                            : Column(children: transactions.take(5).map((transaction) { // Balikin jadi 5 karena berita dihapus
                                   final isIncome = transaction.type == 'income';
                                   return ListTile(
                                     leading: Container(
@@ -354,107 +353,8 @@ class _HomeContentView extends StatelessWidget {
                       ),
                     ),
                     
-                    const SizedBox(height: Spacing.s24),
-
-                    // --- BERITA TERBARU (GAMBAR ADARO) ---
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
-                      child: Row(
-                        children: [
-                          Text(
-                            "Berita terbaru",
-                            style: GoogleFonts.poppins(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? Colors.pink[200] : AppColors.b93160,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: Spacing.s16),
-                    
-                    // CARD BERITA BESAR (Bawah)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
-                      child: GestureDetector(
-                        onTap: () {
-                          // Klik berita --> Masuk ke InvestPage
-                          // Navigator.push(context, MaterialPageRoute(builder: (_) => const InvestPage()));
-                        },
-                        child: Container(
-                          width: double.infinity,
-                          height: 180,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            color: Colors.grey[800],
-                            image: const DecorationImage(
-                              // Gambar Tambang (Adaro vibes)
-                              image: NetworkImage("https://img.IDXChannel.com/images/idx/2024/10/25/adaro_energy.jpg"), 
-                              fit: BoxFit.cover,
-                            ),
-                            boxShadow: [
-                              BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 4)),
-                            ],
-                          ),
-                          child: Stack(
-                            children: [
-                              // Gradient Overlay
-                              Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(20),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [Colors.transparent, Colors.black.withOpacity(0.85)],
-                                  ),
-                                ),
-                              ),
-                              // Teks Berita
-                              Positioned(
-                                bottom: 20,
-                                left: 20,
-                                right: 70,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "AADI vs ADRO",
-                                      style: GoogleFonts.poppins(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      "Batu Bara atau Energi Terbarukan, Mana Lebih Menarik?",
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: GoogleFonts.poppins(fontSize: 12, color: Colors.white70),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Tombol Plus Pink
-                              Positioned(
-                                bottom: 20,
-                                right: 20,
-                                child: Container(
-                                  width: 44,
-                                  height: 44,
-                                  decoration: const BoxDecoration(
-                                    color: AppColors.b93160,
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(Icons.add, color: Colors.white),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
+                    // BERITA (NEWS) & INVEST DIHAPUS DARI SINI
+                    // Agar branch gamification bersih dan tidak menimpa branch invest.
                     
                     const SizedBox(height: 100),
                   ],
