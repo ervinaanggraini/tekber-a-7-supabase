@@ -17,7 +17,7 @@ import 'package:flutter_application/features/analytics/presentation/page/analyti
 import 'package:flutter_application/features/invest/presentation/pages/invest_page.dart';
 import 'package:flutter_application/features/transaction/presentation/pages/transaction_history_page.dart';
 import 'package:flutter_application/dependency_injection.dart';
-// import 'package:flutter_application/features/gamification/screen/mission_screen.dart';
+import 'package:flutter_application/features/gamification/screen/mission_screen.dart';
 
 class HomeContent extends StatelessWidget {
   const HomeContent({super.key});
@@ -116,12 +116,13 @@ class _HomeContentView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // --- HEADER (Halo User) ---
+                    // --- HEADER (Halo User + Notifications + Misi + Profile) ---
                     Padding(
                       padding: const EdgeInsets.all(Spacing.s16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          // Kiri: Halo + Email
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -149,9 +150,10 @@ class _HomeContentView extends StatelessWidget {
                               ),
                             ],
                           ),
-<<<<<<< HEAD
+                          // Kanan: Tombol Notifications + Misi + Profil
                           Row(
                             children: [
+                              // 1. TOMBOL NOTIFICATIONS
                               IconButton(
                                 onPressed: () {
                                   context.pushNamed(Routes.notifications.name);
@@ -162,23 +164,41 @@ class _HomeContentView extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 8),
+                              // 2. TOMBOL MISI
+                              InkWell(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const MissionScreen()),
+                                  );
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withOpacity(0.15),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.stars_rounded,
+                                    color: Colors.amber, 
+                                    size: 26,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // 3. TOMBOL PROFIL
                               InkWell(
                                 onTap: () {
                                   Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (context) => const ProfilePage(),
-                                    ),
+                                    MaterialPageRoute(builder: (context) => const ProfilePage()),
                                   );
                                 },
                                 borderRadius: BorderRadius.circular(24),
                                 child: const CircleAvatar(
                                   radius: 24,
                                   backgroundColor: AppColors.b93160,
-                                  child: Icon(
-                                    Icons.person,
-                                    color: Colors.white,
-                                    size: 28,
-                                  ),
+                                  child: Icon(Icons.person, color: Colors.white, size: 28),
                                 ),
                               ),
                             ],
@@ -281,6 +301,7 @@ class _HomeContentView extends StatelessWidget {
                     
                     const SizedBox(height: Spacing.s24),
                     
+<<<<<<< HEAD
                     // --- MENU ICONS (5 Items: AI Chat, Report, Analytics, Invest, Misi) ---
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: Spacing.s16),
@@ -499,7 +520,7 @@ class _HomeContentView extends StatelessWidget {
                       ),
                     ),
                     
-                    const SizedBox(height: 100), // Spacer biar gak ketutup navigasi bawah (kalau ada)
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),

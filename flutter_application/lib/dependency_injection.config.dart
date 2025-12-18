@@ -92,6 +92,8 @@ import 'package:flutter_application/features/financial_insights/domain/use_cases
     as _i884;
 import 'package:flutter_application/features/financial_insights/presentation/cubit/financial_insights_cubit.dart'
     as _i466;
+import 'package:flutter_application/features/gamification/services/gamification_service.dart'
+    as _i725;
 import 'package:flutter_application/features/home/presentation/bloc/bottom_navigation_bar/bottom_navigation_bar_cubit.dart'
     as _i740;
 import 'package:flutter_application/features/home/presentation/bloc/home/home_cubit.dart'
@@ -216,6 +218,8 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i159.ChatRepository>(() => chatModule.chatRepository);
     gh.lazySingleton<_i248.OcrRemoteDataSource>(
         () => _i248.OcrRemoteDataSourceImpl(gh<_i454.SupabaseClient>()));
+    gh.lazySingleton<_i725.GamificationService>(
+        () => _i725.GamificationService());
     gh.lazySingleton<_i125.AnalyticsRemoteDataSource>(
         () => _i125.AnalyticsRemoteDataSourceImpl(gh<_i454.SupabaseClient>()));
     gh.lazySingleton<_i271.FinancialInsightsRemoteDataSource>(() =>
